@@ -1,0 +1,31 @@
+﻿16:41 30.11.2010
+Я это сделал =) Хотя по работе уже и не нужно...
+
+21:36 22.07.2009
+Задачи консольной версии:
+добавление новых хостов
+удаление хостов
+отключение отдельных позиций
+группы хостов
+для каждой группы свои настройки по умолчанию
+профили (или их заменят группы?)
+
+hosts rem localhost
+hosts set localhost 127.0.0.1
+hosts off localhost
+hosts disable localhost
+hosts enable localhost
+hosts add localhost 127.0.0.1
+hosts clean
+hosts list
+hosts profiles
+hosts setprofile work
+
+11:34 28.01.2009
+Консольная утилита для редактирования hosts.
+Отобразить список хостов
+host
+Удалить localhost с поддоменами
+host /d *localhost
+Добавить хост
+host localhost 127.0.0.1
