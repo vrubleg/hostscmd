@@ -83,12 +83,12 @@ namespace Hosts
 		{ 
 			get
 			{
-				if (Valid && (changed || String.IsNullOrWhiteSpace(text)))
+				if (Valid && (changed || String.IsNullOrEmpty(text)))
 				{
 					string result = String.Format("{0,-18} {1,-31} ", (Enabled ? "" : "# ") + IP, Host);
-					if (!String.IsNullOrWhiteSpace(Comment) || Hidden) result += "#";
+					if (!String.IsNullOrEmpty(Comment) || Hidden) result += "#";
 					if (Hidden) result += "!"; else result += " ";
-					if (!String.IsNullOrWhiteSpace(Comment)) result += Comment;
+					if (!String.IsNullOrEmpty(Comment)) result += Comment;
 					return result.Trim();
 				}
 				else return text;
@@ -107,7 +107,7 @@ namespace Hosts
 					host = match.Groups["host"].Value;
 					comment = match.Groups["comment"].Value;
 					hidden = false;
-					if (!String.IsNullOrWhiteSpace(comment))
+					if (!String.IsNullOrEmpty(comment))
 					{
 						hidden = comment[0] == '!';
 						if (hidden) comment = comment.Substring(1).Trim();
@@ -174,12 +174,12 @@ namespace Hosts
 
 		public void Save()
 		{
-			List<string> TextLines = new List<string>(Lines.Count);
+			StringBuilder HostsText = new StringBuilder();
 			foreach (HostLine item in Lines)
 			{
-				TextLines.Add(item.ToString());
+				HostsText.AppendLine(item.ToString());
 			}
-			File.WriteAllLines(FileName, TextLines);
+			File.WriteAllText(FileName, HostsText.ToString());
 		}
 
 		public void ResetFormat()

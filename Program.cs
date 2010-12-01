@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using Microsoft.Win32;
 using System.Reflection;
+using System.Diagnostics;
 
 namespace Hosts
 {
@@ -68,9 +69,13 @@ namespace Hosts
 			Console.WriteLine("  hosts hide          <host|mask>");
 			Console.WriteLine("  hosts show          <host|mask>");
 			Console.WriteLine("  hosts [list|view]   [enabled|disabled] [visible|hidden] <mask>");
-			Console.WriteLine("  hosts raw    - prints raw hosts file");
-			Console.WriteLine("  hosts format - formats host rows");
-			Console.WriteLine("  hosts clean  - removes all comments");
+			Console.WriteLine("  hosts print   - print raw hosts file");
+			Console.WriteLine("  hosts format  - format host rows");
+			Console.WriteLine("  hosts clean   - remove all comments");
+			Console.WriteLine("  hosts backup  - backup hosts file");
+			Console.WriteLine("  hosts restore - restore hosts file from backup");
+			Console.WriteLine("  hosts open    - open hosts file in notepad");
+
 		}
 
 		static void View(string mask, bool? visibleOnly = null, bool? enabledOnly = null)
@@ -115,12 +120,12 @@ namespace Hosts
 				List<HostLine> Lines;
 				switch (args[0].ToLower().Trim())
 				{
+					case "print":
 					case "raw":
 					case "file":
 						Console.WriteLine(File.ReadAllText(Hosts.FileName));
 						return;
 
-					case "print":
 					case "list":
 					case "view":
 					case "select":
@@ -136,7 +141,11 @@ namespace Hosts
 								case "disabled":	enabledOnly = false;	break;
 								case "hidden":		visibleOnly = false;	break;
 								case "visible":		visibleOnly = true;		break;
-								default:			mask = "*"+arg+"*";		break;
+								default:
+									mask = arg;
+									if (!mask.StartsWith("*")) mask = '*' + mask;
+									if (!mask.EndsWith("*")) mask += '*';
+									break;
 							}
 						}
 						View(mask, visibleOnly, enabledOnly);
@@ -239,10 +248,30 @@ namespace Hosts
 						}
 						break;
 
+					case "open":
+						Process.Start("notepad", '"'+Hosts.FileName+'"');
+						return;
+
+					case "backup":
+						File.Copy(Hosts.FileName, Hosts.FileName + ".backup", true);
+						Console.WriteLine("Hosts file backed up successfully");
+						return;
+
+					case "restore":
+						if (!File.Exists(Hosts.FileName + ".backup")) throw new Exception("Backup is not created");
+						File.Copy(Hosts.FileName + ".backup", Hosts.FileName, true);
+						Console.WriteLine("Hosts file restored successfully");
+						return;
+
 					default:
 					case "help":
 						Help();
 						return;
+				}
+				// First run backup
+				if (!File.Exists(Hosts.FileName + ".backup"))
+				{
+					File.Copy(Hosts.FileName, Hosts.FileName + ".backup");
 				}
 				Hosts.Save();
 			}
