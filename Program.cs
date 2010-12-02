@@ -27,15 +27,12 @@ namespace Hosts
 
 	class Program
 	{
-		static HostsEditor Hosts;
-
-		static Program()
+		static string GetHostsFileName()
 		{
 			RegistryKey HostsRegKey = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\");
-			string HostsPath = (string)HostsRegKey.GetValue("DataBasePath") + @"\hosts";
+			string HostsPath = (string)HostsRegKey.GetValue("DataBasePath");
 			HostsRegKey.Close();
-			HostsPath = Environment.ExpandEnvironmentVariables(HostsPath);
-			Hosts = new HostsEditor(HostsPath);
+			return Environment.ExpandEnvironmentVariables(HostsPath + @"\hosts");
 		}
 
 		static T GetAssemblyAttribute<T>()
@@ -69,15 +66,17 @@ namespace Hosts
 			Console.WriteLine("  hosts hide          <host|mask>");
 			Console.WriteLine("  hosts show          <host|mask>");
 			Console.WriteLine("  hosts [list|view]   [enabled|disabled] [visible|hidden] <mask>");
-			Console.WriteLine("  hosts print   - print raw hosts file");
-			Console.WriteLine("  hosts format  - format host rows");
-			Console.WriteLine("  hosts clean   - remove all comments");
-			Console.WriteLine("  hosts backup  - backup hosts file");
-			Console.WriteLine("  hosts restore - restore hosts file from backup");
-			Console.WriteLine("  hosts open    - open hosts file in notepad");
-
+			Console.WriteLine("  hosts print    - display raw hosts file");
+			Console.WriteLine("  hosts format   - format host rows");
+			Console.WriteLine("  hosts clean    - remove all comments");
+			Console.WriteLine("  hosts backup   - backup hosts file");
+			Console.WriteLine("  hosts restore  - restore hosts file from backup");
+			Console.WriteLine("  hosts recreate - empty hosts file");
+			Console.WriteLine("  hosts open     - open hosts file in notepad");
 		}
 
+		static HostsEditor Hosts;
+	
 		static void View(string mask, bool? visibleOnly = null, bool? enabledOnly = null)
 		{
 			int enabled = 0;
@@ -105,25 +104,58 @@ namespace Hosts
 		{
 			try
 			{
+				// var ArgsQueue = new Queue<string>(args);
+				string Mode = (args.Length > 0) ? args[0].Trim().ToLower() : "default";
+				string HostsFile = GetHostsFileName();
+				string BackupHostsFile = HostsFile + ".backup";
+				if (!File.Exists(HostsFile)) File.WriteAllText(HostsFile, new HostLine("127.0.0.1", "localhost").ToString());
+				if (!File.Exists(BackupHostsFile)) File.Copy(HostsFile, BackupHostsFile);
+
+				switch (Mode)
+				{
+					case "open":
+						Process.Start("notepad", '"' + HostsFile + '"');
+						return;
+
+					case "backup":
+						File.Copy(HostsFile, BackupHostsFile, true);
+						Console.WriteLine("[OK] Hosts file backed up successfully");
+						return;
+
+					case "restore":
+						if (!File.Exists(BackupHostsFile)) throw new Exception("Backup file is not exists");
+						File.Copy(BackupHostsFile, HostsFile, true);
+						Console.WriteLine("[OK] Hosts file restored successfully");
+						return;
+
+					case "recreate":
+						File.WriteAllText(HostsFile, new HostLine("127.0.0.1", "localhost").ToString());
+						Console.WriteLine("[OK] New hosts file created successfully");
+						return;
+
+					case "help":
+						Help();
+						return;
+				}
+
+				Hosts = new HostsEditor(HostsFile);
 				Hosts.Load();
 
-				if (args.Length == 0)
-				{
-					Console.WriteLine(GetTitle());
-					Console.WriteLine("Usage: hosts < add | rem | on | off | view | help >");
-					Console.WriteLine("Hosts file: " + Hosts.FileName.ToLower());
-					Console.WriteLine();
-					View("*", true, true);
-					return;
-				}
-				
 				List<HostLine> Lines;
-				switch (args[0].ToLower().Trim())
+				switch (Mode)
 				{
+					case "default":
+						Console.WriteLine(GetTitle());
+						Console.WriteLine("Usage: hosts < add | rem | on | off | view | help >");
+						Console.WriteLine("Hosts file: " + Hosts.FileName.ToLower());
+						Console.WriteLine();
+						View("*", true, true);
+						return;
+
 					case "print":
 					case "raw":
 					case "file":
-						Console.WriteLine(File.ReadAllText(Hosts.FileName));
+						Console.WriteLine(File.ReadAllText(Hosts.FileName, Hosts.Encoding));
 						return;
 
 					case "list":
@@ -153,13 +185,13 @@ namespace Hosts
 
 					case "format":
 						Hosts.ResetFormat();
-						Console.WriteLine("Hosts file formatted successfully");
+						Console.WriteLine("[OK] Hosts file formatted successfully");
 						break;
 
 					case "clean":
 						Hosts.RemoveInvalid();
 						Hosts.ResetFormat();
-						Console.WriteLine("Hosts file cleaned successfully");
+						Console.WriteLine("[OK] Hosts file cleaned successfully");
 						break;
 
 					case "add":
@@ -248,30 +280,9 @@ namespace Hosts
 						}
 						break;
 
-					case "open":
-						Process.Start("notepad", '"'+Hosts.FileName+'"');
-						return;
-
-					case "backup":
-						File.Copy(Hosts.FileName, Hosts.FileName + ".backup", true);
-						Console.WriteLine("Hosts file backed up successfully");
-						return;
-
-					case "restore":
-						if (!File.Exists(Hosts.FileName + ".backup")) throw new Exception("Backup is not created");
-						File.Copy(Hosts.FileName + ".backup", Hosts.FileName, true);
-						Console.WriteLine("Hosts file restored successfully");
-						return;
-
 					default:
-					case "help":
 						Help();
 						return;
-				}
-				// First run backup
-				if (!File.Exists(Hosts.FileName + ".backup"))
-				{
-					File.Copy(Hosts.FileName, Hosts.FileName + ".backup");
 				}
 				Hosts.Save();
 			}

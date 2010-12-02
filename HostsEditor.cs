@@ -16,6 +16,15 @@ namespace Hosts
 				+ @"(?:#\s*(?<comment>.*?)\s*)?$",
 				RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled);
 
+		public HostLine(string ip, string host)
+		{
+			Enabled = true;
+			IP = ip;
+			Host = host;
+			Comment = "";
+			Valid = true;
+		}
+
 		public HostLine(string text, bool resetFormat = false)
 		{
 			Text = text;
@@ -161,7 +170,7 @@ namespace Hosts
 		}
 
 		public string FileName;
-		public Encoding Encoding = Encoding.UTF8;
+		public Encoding Encoding = new UTF8Encoding(false);
 		public List<HostLine> Lines = new List<HostLine>();
 
 		public HostsEditor(string fileName)
@@ -180,7 +189,7 @@ namespace Hosts
 			Clear();
 			if (!File.Exists(FileName)) throw new FileNotFoundException("hosts file not found", FileName);
 			byte[] HostsData = File.ReadAllBytes(FileName);
-			Encoding = (IsUTF8(HostsData)) ? Encoding.UTF8 : Encoding.Default;
+			Encoding = (IsUTF8(HostsData)) ? new UTF8Encoding(false) : Encoding.Default;
 			var HostsReader = new StreamReader(new MemoryStream(HostsData), Encoding);
 			string line;
 			while ((line = HostsReader.ReadLine()) != null)
