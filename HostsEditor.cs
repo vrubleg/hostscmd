@@ -146,12 +146,27 @@ namespace Hosts
 			return HostPattern.IsMatch(host);
 		}
 
+		static private bool IsUTF8(byte[] data)
+		{
+			try
+			{
+				new UTF8Encoding(false, true).GetCharCount(data);
+				return true;
+			}
+			catch
+			{
+				return false;
+			}
+
+		}
+
 		public string FileName;
+		public Encoding Encoding = Encoding.UTF8;
 		public List<HostLine> Lines = new List<HostLine>();
 
-		public HostsEditor(string fileName) 
+		public HostsEditor(string fileName)
 		{
-			if (fileName == null) throw new ArgumentNullException("fileName");
+			if (String.IsNullOrEmpty(fileName)) throw new ArgumentNullException("fileName");
 			FileName = fileName;
 		}
 
@@ -160,26 +175,27 @@ namespace Hosts
 			Lines.Clear();
 		}
 
-		public void Load(/*bool validOnly = false, bool resetFormat = false*/)
+		public void Load()
 		{
 			Clear();
-			string[] lines = File.ReadAllLines(FileName);
-			foreach (string line in lines)
+			if (!File.Exists(FileName)) throw new FileNotFoundException("hosts file not found", FileName);
+			byte[] HostsData = File.ReadAllBytes(FileName);
+			Encoding = (IsUTF8(HostsData)) ? Encoding.UTF8 : Encoding.Default;
+			var HostsReader = new StreamReader(new MemoryStream(HostsData), Encoding);
+			string line;
+			while ((line = HostsReader.ReadLine()) != null)
 			{
-				HostLine item = new HostLine(line/*, resetFormat*/);
-				/*if (validOnly && !item.Valid) continue;*/
+				HostLine item = new HostLine(line);
 				Lines.Add(item);
 			}
 		}
 
 		public void Save()
 		{
-			StringBuilder HostsText = new StringBuilder();
-			foreach (HostLine item in Lines)
-			{
-				HostsText.AppendLine(item.ToString());
-			}
-			File.WriteAllText(FileName, HostsText.ToString());
+			var HostsStream = new FileStream(FileName, FileMode.Create, FileAccess.Write);
+			var HostsWriter = new StreamWriter(HostsStream, Encoding);
+ 			foreach (HostLine item in Lines) HostsWriter.WriteLine(item.ToString());
+			HostsWriter.Close();
 		}
 
 		public void ResetFormat()
