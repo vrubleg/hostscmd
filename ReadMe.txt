@@ -1,4 +1,4 @@
-﻿Hosts Commander v1.1
+﻿Hosts Commander
 
 hosts list [enabled|disabled] [visible|hidden] <mask>
  - Отображает хосты, соответствующие требованиям
