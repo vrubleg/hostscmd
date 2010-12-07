@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace Hosts
 {
-	public class HostLine
+	public class HostsItem
 	{
 		static private Regex HostRowPattern = new Regex(@"^#?\s*"
 				+ @"(?<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|[0-9a-f:]+)\s+"
@@ -14,7 +14,7 @@ namespace Hosts
 				+ @"(?:#\s*(?<comment>.*?)\s*)?$",
 				RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled);
 
-		public HostLine(string ip, string host)
+		public HostsItem(string ip, string host)
 		{
 			Enabled = true;
 			IP = ip;
@@ -23,13 +23,13 @@ namespace Hosts
 			Valid = true;
 		}
 
-		public HostLine(string text, bool resetFormat = false)
+		public HostsItem(string text, bool resetFormat = false)
 		{
 			Text = text;
-			if (resetFormat) ResetFormat();
+			ResetFormat = resetFormat;
 		}
 
-		public HostLine(bool enabled, string ip, string host, string comment)
+		public HostsItem(bool enabled, string ip, string host, string comment)
 		{
 			Enabled = enabled;
 			IP = ip;
@@ -75,14 +75,7 @@ namespace Hosts
 			set { if (comment != value) { comment = value; changed = true; } }
 		}
 
-		public void ResetFormat()
-		{
-			if (Valid)
-			{
-				text = null;
-				changed = true;
-			}
-		}
+		public bool ResetFormat { get; set; }
 
 		private string text;
 		private bool changed;
@@ -90,7 +83,7 @@ namespace Hosts
 		{
 			get
 			{
-				if (Valid && (changed || String.IsNullOrEmpty(text)))
+				if (Valid && (ResetFormat || changed || String.IsNullOrEmpty(text)))
 				{
 					string result = String.Format("{0,-18} {1,-31} ", (Enabled ? "" : "# ") + IP, Host);
 					if (!String.IsNullOrEmpty(Comment) || Hidden) result += "#";
@@ -110,7 +103,7 @@ namespace Hosts
 					if (!match.Success) throw new FormatException();
 					enabled = value[0] != '#';
 					ip = match.Groups["ip"].Value;
-					if (!HostsEditor.CheckIP(ip)) throw new FormatException();
+					if (!HostsHelper.CheckIP(ip)) throw new FormatException();
 					host = match.Groups["host"].Value;
 					comment = match.Groups["comment"].Value;
 					hidden = false;

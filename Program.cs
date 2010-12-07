@@ -87,8 +87,8 @@ namespace Hosts
 
 			Hosts.RemoveInvalid();
 			Hosts.ResetFormat();
-			List<HostLine> FoundLines = Hosts.GetMatch(mask);
-			foreach (HostLine Line in FoundLines)
+			List<HostsItem> FoundLines = Hosts.GetMatch(mask);
+			foreach (HostsItem Line in FoundLines)
 			{
 				if (Line.Enabled) enabled++; else disabled++;
 				if (Line.Hidden) hidden++;
@@ -108,7 +108,7 @@ namespace Hosts
 				string Mode = (args.Length > 0) ? args[0].Trim().ToLower() : "default";
 				string HostsFile = GetHostsFileName();
 				string BackupHostsFile = HostsFile + ".backup";
-				if (!File.Exists(HostsFile)) File.WriteAllText(HostsFile, new HostLine("127.0.0.1", "localhost").ToString());
+				if (!File.Exists(HostsFile)) File.WriteAllText(HostsFile, new HostsItem("127.0.0.1", "localhost").ToString());
 				if (!File.Exists(BackupHostsFile)) File.Copy(HostsFile, BackupHostsFile);
 
 				switch (Mode)
@@ -129,7 +129,7 @@ namespace Hosts
 						return;
 
 					case "recreate":
-						File.WriteAllText(HostsFile, new HostLine("127.0.0.1", "localhost").ToString());
+						File.WriteAllText(HostsFile, new HostsItem("127.0.0.1", "localhost").ToString());
 						Console.WriteLine("[OK] New hosts file created successfully");
 						return;
 
@@ -141,7 +141,7 @@ namespace Hosts
 				Hosts = new HostsEditor(HostsFile);
 				Hosts.Load();
 
-				List<HostLine> Lines;
+				List<HostsItem> Lines;
 				switch (Mode)
 				{
 					case "default":
@@ -200,9 +200,9 @@ namespace Hosts
 					case "change":
 					case "update":
 						if (args.Length == 1) throw new HostNotSpecifiedException();
-						if (!HostsEditor.CheckHost(args[1])) throw new InvalidHostException(args[1]);
-						if (args.Length > 2 && !HostsEditor.CheckIP(args[2])) throw new InvalidIpException(args[2]);
-						HostLine LineItem = Hosts.Get(args[1]);
+						if (!HostsHelper.CheckHost(args[1])) throw new InvalidHostException(args[1]);
+						if (args.Length > 2 && !HostsHelper.CheckIP(args[2])) throw new InvalidIpException(args[2]);
+						HostsItem LineItem = Hosts.Get(args[1]);
 						if (LineItem == null)
 						{
 							if (args.Length > 3) Hosts.Add(args[1], args[2], args[3]);
@@ -226,7 +226,7 @@ namespace Hosts
 						if (args.Length == 1) throw new HostNotSpecifiedException();
 						Lines = Hosts.GetMatch(args[1]);
 						if (Lines.Count == 0) throw new HostNotFoundException(args[1]);
-						foreach (HostLine Line in Lines)
+						foreach (HostsItem Line in Lines)
 						{
 							string host = Line.Host;
 							Hosts.Remove(host);
@@ -239,7 +239,7 @@ namespace Hosts
 						if (args.Length == 1) throw new HostNotSpecifiedException();
 						Lines = Hosts.GetMatch(args[1]);
 						if (Lines.Count == 0) throw new HostNotFoundException(args[1]);
-						foreach (HostLine Line in Lines)
+						foreach (HostsItem Line in Lines)
 						{
 							Line.Enabled = true;
 							Console.WriteLine("[ENABLED] {0} {1}", Line.Host, Line.IP);
@@ -251,7 +251,7 @@ namespace Hosts
 						if (args.Length == 1) throw new HostNotSpecifiedException();
 						Lines = Hosts.GetMatch(args[1]);
 						if (Lines.Count == 0) throw new HostNotFoundException(args[1]);
-						foreach (HostLine Line in Lines)
+						foreach (HostsItem Line in Lines)
 						{
 							Line.Enabled = false;
 							Console.WriteLine("[DISABLED] {0} {1}", Line.Host, Line.IP);
@@ -262,7 +262,7 @@ namespace Hosts
 						if (args.Length == 1) throw new HostNotSpecifiedException();
 						Lines = Hosts.GetMatch(args[1]);
 						if (Lines.Count == 0) throw new HostNotFoundException(args[1]);
-						foreach (HostLine Line in Lines)
+						foreach (HostsItem Line in Lines)
 						{
 							Line.Hidden = true;
 							Console.WriteLine("[HIDDEN] {0} {1}", Line.Host, Line.IP);
@@ -273,7 +273,7 @@ namespace Hosts
 						if (args.Length == 1) throw new HostNotSpecifiedException();
 						Lines = Hosts.GetMatch(args[1]);
 						if (Lines.Count == 0) throw new HostNotFoundException(args[1]);
-						foreach (HostLine Line in Lines)
+						foreach (HostsItem Line in Lines)
 						{
 							Line.Hidden = false;
 							Console.WriteLine("[SHOWN] {0} {1}", Line.Host, Line.IP);
