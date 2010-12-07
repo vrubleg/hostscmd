@@ -58,7 +58,11 @@ namespace Hosts
 		{
 			var HostsStream = new FileStream(fileName, FileMode.Create, FileAccess.Write);
 			var HostsWriter = new StreamWriter(HostsStream, Encoding);
-			foreach (HostsItem item in this) HostsWriter.WriteLine(item.ToString());
+			foreach (HostsItem item in this)
+			{
+				if (item.Deleted) break;
+				HostsWriter.WriteLine(item.ToString());
+			}
 			HostsWriter.Close();
 		}
 

@@ -27,9 +27,9 @@ namespace Hosts
 			return (Get(host) != null);
 		}
 
-		public void Add(string host, string ip, string comment = "", bool enabled = true)
+		public void Add(string host, string ip, string comment = "")
 		{
-			this.Add(new HostsItem(enabled, ip, host, comment));
+			this.Add(new HostsItem(ip, host, comment));
 		}
 
 		public void Remove(string host)

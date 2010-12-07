@@ -10,7 +10,7 @@ namespace Hosts
 {
 	public enum IpType { Invalid, IPv4, IPv6 }
 
-	static class HostsHelper
+	public static class HostsHelper
 	{
 		static public IpType GetIpType(string ip)
 		{
@@ -29,7 +29,7 @@ namespace Hosts
 			return GetIpType(ip) != IpType.Invalid;
 		}
 
-		static private Regex HostPattern = new Regex(@"^([-_a-z0-9]+\.?)+$", RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled);
+		static private Regex HostPattern = new Regex(@"^([a-z0-9][-_a-z0-9]*\.?)+$", RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled);
 		static public bool CheckHost(string host)
 		{
 			return HostPattern.IsMatch(host);
