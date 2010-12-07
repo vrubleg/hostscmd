@@ -188,7 +188,13 @@ namespace Hosts
 				if (!String.IsNullOrEmpty(Comment)) result += Comment;
 				return result.Trim();
 			}
-			else return text;
+			else
+			{
+				if(!ResetFormat) return text;
+				string result = text.Trim();
+				if (result.Length > 0 && result[0] != '#') result = "# " + result;
+				return result;
+			}
 		}
 	}
 }
