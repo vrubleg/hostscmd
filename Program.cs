@@ -9,16 +9,6 @@ using System.Diagnostics;
 namespace Hosts
 {
 	class HostNotSpecifiedException : ApplicationException { }
-	class InvalidHostException : ApplicationException 
-	{
-		public string Host { get; protected set; }
-		public InvalidHostException(string host) { Host = host; }
-	}
-	class InvalidIpException : ApplicationException
-	{ 
-		public string IP { get; protected set; }
-		public InvalidIpException(string ip) { IP = ip; }
-	}
 	class HostNotFoundException : ApplicationException 
 	{
 		public string Host { get; protected set; }
@@ -200,8 +190,6 @@ namespace Hosts
 					case "change":
 					case "update":
 						if (args.Length == 1) throw new HostNotSpecifiedException();
-						if (!HostsHelper.CheckHost(args[1])) throw new InvalidHostException(args[1]);
-						if (args.Length > 2 && !HostsHelper.CheckIP(args[2])) throw new InvalidIpException(args[2]);
 						HostsItem LineItem = Hosts.Get(args[1]);
 						if (LineItem == null)
 						{
@@ -293,14 +281,6 @@ namespace Hosts
 			catch (HostNotFoundException e)
 			{
 				Console.WriteLine("[ERROR] Host '{0}' not found", e.Host);
-			}
-			catch (InvalidHostException e)
-			{
-				Console.WriteLine("[ERROR] Invalid host '{0}'", e.Host);
-			}
-			catch (InvalidIpException e)
-			{
-				Console.WriteLine("[ERROR] Invalid IP '{0}'", e.IP);
 			}
 			catch (Exception e)
 			{

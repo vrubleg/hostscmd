@@ -64,10 +64,12 @@ namespace Hosts
 
 		public void ResetFormat(bool resetFormat = true)
 		{
-			foreach (HostsItem item in this)
-			{
-				item.ResetFormat = resetFormat;
-			}
+			this.ForEach(item => item.ResetFormat = resetFormat);
+		}
+
+		public void RemoveInvalid()
+		{
+			this.RemoveAll(item => !item.Valid);
 		}
 	}
 }

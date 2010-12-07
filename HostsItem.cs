@@ -58,14 +58,35 @@ namespace Hosts
 		public string IP
 		{
 			get { return ip; }
-			set { if (ip != value) { ip = value; changed = true; } }
+			set 
+			{
+				if (ip != value) 
+				{
+					if (!HostsHelper.CheckIP(value)) throw new FormatException(String.Format("Invalid IP address '{0}'", value));
+					ip = value; 
+					changed = true; 
+				} 
+			}
+		}
+
+		public IpType IpType 
+		{
+			get { return (Valid) ? HostsHelper.GetIpType(ip) : IpType.Invalid; }
 		}
 
 		private string host;
 		public string Host
 		{
 			get { return host; }
-			set { if (host != value) { host = value; changed = true; } }
+			set 
+			{
+				if (host != value)
+				{
+					if (!HostsHelper.CheckHost(value)) throw new FormatException(String.Format("Invalid host '{0}'", value));
+					host = value;
+					changed = true;
+				} 
+			}
 		}
 
 		private string comment;

@@ -10,11 +10,6 @@ namespace Hosts
 	{
 		public HostsEditor(string fileName) : base (fileName) { }
 
-		public void RemoveInvalid()
-		{
-			this.RemoveAll(item => !item.Valid);
-		}
-
 		public HostsItem Get(string host)
 		{
 			return this.Find(item => item.Valid && item.Host == host);

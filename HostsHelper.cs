@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 
 namespace Hosts
 {
-	enum IpType { Invalid, IPv4, IPv6 }
+	public enum IpType { Invalid, IPv4, IPv6 }
 
 	static class HostsHelper
 	{
