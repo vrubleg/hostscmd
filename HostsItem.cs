@@ -6,50 +6,6 @@ using System.Text.RegularExpressions;
 
 namespace Hosts
 {
-	public class HostAliases : List<string>
-	{
-		public HostAliases() { }
-
-		public HostAliases(string[] hosts)
-		{
-			Add(hosts);
-		}
-
-		public HostAliases(string line)
-		{
-			Add(line.Split(new char[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries));
-		}
-
-		public new bool Add(string value)
-		{
-			if (!HostsHelper.CheckHost(value)) throw new FormatException(String.Format("Invalid host '{0}'", value));
-			if (Contains(value)) return false;
-			RemoveAll(item => String.IsNullOrEmpty(item));
-			base.Add(value);
-			return true;
-		}
-
-		public void Add(string[] hosts)
-		{
-			foreach (string host in hosts) Add(host);
-		}
-
-		public new string this[int index]
-		{
-			get { if (index == 0 && Count == 0) return ""; else return base[index]; }
-			set
-			{
-				if (!HostsHelper.CheckHost(value)) throw new FormatException(String.Format("Invalid host '{0}'", value));
-				if (index == 0 && Count == 0) Add(value); else base[index] = value;
-			}
-		}
-
-		public override string ToString()
-		{
-			return String.Join("  ", this.ToArray());
-		}
-	}
-
 	public class HostsItem
 	{
 		public HostsItem(string ip, string hosts, string comment = "")
@@ -180,9 +136,14 @@ namespace Hosts
 
 		public override string ToString()
 		{
+			return ToString(true);
+		}
+
+		public string ToString(bool idn)
+		{
 			if (Valid && (ResetFormat || changed || String.IsNullOrEmpty(text)))
 			{
-				string result = String.Format("{0,-18} {1,-31} ", (Enabled ? "" : "# ") + IP, Aliases.ToString());
+				string result = String.Format("{0,-18} {1,-31} ", (Enabled ? "" : "# ") + IP, Aliases.ToString(idn));
 				if (!String.IsNullOrEmpty(Comment) || Hidden) result += "#";
 				if (Hidden) result += "!"; else result += " ";
 				if (!String.IsNullOrEmpty(Comment)) result += Comment;

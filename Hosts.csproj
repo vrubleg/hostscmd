@@ -74,6 +74,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="HostAliases.cs" />
+    <Compile Include="HostName.cs" />
     <Compile Include="HostsItem.cs" />
     <Compile Include="HostsEditor.cs" />
     <Compile Include="HostsList.cs" />

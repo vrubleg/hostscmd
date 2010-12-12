@@ -61,7 +61,7 @@ namespace Hosts
 			foreach (HostsItem item in this)
 			{
 				if (item.Deleted) break;
-				HostsWriter.WriteLine(item.ToString());
+				HostsWriter.WriteLine(item.ToString(false));
 			}
 			HostsWriter.Close();
 		}
