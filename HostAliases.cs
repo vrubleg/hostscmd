@@ -7,45 +7,49 @@ namespace Hosts
 {
 	public class HostAliases : List<HostName>
 	{
-		public HostAliases() { }
+		public HostAliases()					{ }
+		public HostAliases(string line)			{ Set(line); }
+		public HostAliases(string[] hosts)		{ Set(hosts); }
+		public HostAliases(HostName host)		{ Set(host); }
+		public HostAliases(HostName[] hosts)	{ Set(hosts); }
+		public HostAliases(HostAliases hosts)	{ Set(hosts); }
 
-		public HostAliases(string[] hosts)
-		{
-			Add(hosts);
-		}
+		public int Set(string line)			{ Clear(); return Add(line); }
+		public int Set(string[] hosts)		{ Clear(); return Add(hosts); }
+		public int Set(HostName host)		{ Clear(); return Add(host); }
+		public int Set(HostName[] hosts)	{ Clear(); return Add(hosts); }
+		public int Set(HostAliases hosts)	{ Clear(); return Add(hosts); }
 
-		public HostAliases(string line)
+		public new int Add(HostName host)
 		{
-			Add(line.Split(new char[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries));
-		}
-
-		public new bool Add(HostName host)
-		{
-			if (Contains(host)) return false;
+			if (Contains(host)) return 0;
 			RemoveAll(item => String.IsNullOrEmpty(item));
 			base.Add(host);
-			return true;
+			return 1;
 		}
 
-		public void Add(HostName[] hosts)
+		public int Add(HostName[] hosts)
 		{
-			foreach (HostName host in hosts) Add(host);
+			int result = 0;
+			foreach (HostName host in hosts) result += Add(host);
+			return result;
 		}
 
-		public bool Add(string value)
+		public int Add(string line)
 		{
-			return Add(new HostName(value));
+			return Add(line.Split(new char[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries));
 		}
 
-		public void Add(string[] hosts)
+		public int Add(string[] hosts)
 		{
-			foreach (string host in hosts) Add(host);
+			int result = 0;
+			foreach (string host in hosts) result += Add(new HostName(host));
+			return result;
 		}
 
-		public new HostName this[int index]
+		public int Add(HostAliases hosts)
 		{
-			get { if (index == 0 && Count == 0) return ""; else return base[index]; }
-			set	{ if (index == 0 && Count == 0) Add(value); else base[index] = value; }
+			return Add(hosts.ToArray());
 		}
 
 		public override string ToString()
@@ -57,7 +61,12 @@ namespace Hosts
 		{
 			List<string> hosts = new List<string>(this.Count);
 			foreach (HostName hn in this) hosts.Add(idn ? hn.Unicode : hn.Ascii);
-			return String.Join("  ", hosts.ToArray());
+			return String.Join(" ", hosts.ToArray());
+		}
+
+		public bool IsMatch(WildcardPattern pattern)
+		{
+			return this.Exists(item => pattern.IsMatch(item.Unicode));
 		}
 	}
 }

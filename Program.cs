@@ -77,7 +77,7 @@ namespace Hosts
 
 			Hosts.RemoveInvalid();
 			Hosts.ResetFormat();
-			List<HostsItem> FoundLines = Hosts.GetMatch(mask);
+			List<HostsItem> FoundLines = Hosts.GetMatched(mask);
 			foreach (HostsItem Line in FoundLines)
 			{
 				if (Line.Enabled) enabled++; else disabled++;
@@ -130,7 +130,7 @@ namespace Hosts
 
 				Hosts = new HostsEditor(HostsFile);
 				Hosts.Load();
-
+				
 				List<HostsItem> Lines;
 				switch (Mode)
 				{
@@ -186,11 +186,15 @@ namespace Hosts
 
 					case "add":
 					case "new":
+						if (args.Length == 1) throw new HostNotSpecifiedException();
+						// TODO
+						break;
+
 					case "set":
 					case "change":
 					case "update":
 						if (args.Length == 1) throw new HostNotSpecifiedException();
-						HostsItem LineItem = Hosts.Get(args[1]);
+						/*HostsItem LineItem = Hosts.Get(args[1]);
 						if (LineItem == null)
 						{
 							if (args.Length > 3) Hosts.Add(args[1], args[2], args[3]);
@@ -204,7 +208,7 @@ namespace Hosts
 							if (args.Length > 2) LineItem.IP = args[2];
 							if (args.Length > 3) LineItem.Comment = args[3];
 							Console.WriteLine("[UPDATED] {0} {1}", LineItem.Host, LineItem.IP);
-						}
+						}*/
 						break;
 
 					case "rem":
@@ -212,59 +216,58 @@ namespace Hosts
 					case "del":
 					case "delete":
 						if (args.Length == 1) throw new HostNotSpecifiedException();
-						Lines = Hosts.GetMatch(args[1]);
+						Lines = Hosts.GetMatched(args[1]);
 						if (Lines.Count == 0) throw new HostNotFoundException(args[1]);
 						foreach (HostsItem Line in Lines)
 						{
-							string host = Line.Host;
-							Hosts.Remove(host);
-							Console.WriteLine("[REMOVED] {0}", host);
+							Hosts.Remove(Line);
+							Console.WriteLine("[REMOVED] {0} {1}", Line.IP.ToString(), Line.Aliases.ToString());
 						}
 						break;
 
 					case "on":
 					case "enable":
 						if (args.Length == 1) throw new HostNotSpecifiedException();
-						Lines = Hosts.GetMatch(args[1]);
+						Lines = Hosts.GetMatched(args[1]);
 						if (Lines.Count == 0) throw new HostNotFoundException(args[1]);
 						foreach (HostsItem Line in Lines)
 						{
 							Line.Enabled = true;
-							Console.WriteLine("[ENABLED] {0} {1}", Line.Host, Line.IP);
+							Console.WriteLine("[ENABLED] {0} {1}", Line.IP.ToString(), Line.Aliases.ToString());
 						}
 						break;
 
 					case "off":
 					case "disable":
 						if (args.Length == 1) throw new HostNotSpecifiedException();
-						Lines = Hosts.GetMatch(args[1]);
+						Lines = Hosts.GetMatched(args[1]);
 						if (Lines.Count == 0) throw new HostNotFoundException(args[1]);
 						foreach (HostsItem Line in Lines)
 						{
 							Line.Enabled = false;
-							Console.WriteLine("[DISABLED] {0} {1}", Line.Host, Line.IP);
+							Console.WriteLine("[DISABLED] {0} {1}", Line.IP.ToString(), Line.Aliases.ToString());
 						}
 						break;
 
 					case "hide":
 						if (args.Length == 1) throw new HostNotSpecifiedException();
-						Lines = Hosts.GetMatch(args[1]);
+						Lines = Hosts.GetMatched(args[1]);
 						if (Lines.Count == 0) throw new HostNotFoundException(args[1]);
 						foreach (HostsItem Line in Lines)
 						{
 							Line.Hidden = true;
-							Console.WriteLine("[HIDDEN] {0} {1}", Line.Host, Line.IP);
+							Console.WriteLine("[HIDDEN] {0} {1}", Line.IP.ToString(), Line.Aliases.ToString());
 						}
 						break;
 
 					case "show":
 						if (args.Length == 1) throw new HostNotSpecifiedException();
-						Lines = Hosts.GetMatch(args[1]);
+						Lines = Hosts.GetMatched(args[1]);
 						if (Lines.Count == 0) throw new HostNotFoundException(args[1]);
 						foreach (HostsItem Line in Lines)
 						{
 							Line.Hidden = false;
-							Console.WriteLine("[SHOWN] {0} {1}", Line.Host, Line.IP);
+							Console.WriteLine("[SHOWN] {0} {1}", Line.IP.ToString(), Line.Aliases.ToString());
 						}
 						break;
 

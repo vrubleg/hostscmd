@@ -8,10 +8,25 @@ namespace Hosts
 {
 	public class HostsItem
 	{
+		public bool Valid { get; protected set; }
+		public bool Enabled { get; set; }
+		public bool Hidden { get; set; }
+		public NetAddress IP { get; set; }
+		public HostAliases Aliases { get; set; }
+		public string Comment { get; set; }
+		public bool ResetFormat { get; set; }
+		public bool Deleted { get { return Valid && (Aliases == null || Aliases.Count == 0); } }
+
+		public HostsItem(string text, bool resetFormat = false)
+		{
+			ResetFormat = resetFormat;
+			Parse(text);
+		}
+
 		public HostsItem(string ip, string hosts, string comment = "")
 		{
 			Enabled = true;
-			IP = ip;
+			IP = new NetAddress(ip);
 			Aliases = new HostAliases(hosts);
 			Comment = comment;
 			Valid = true;
@@ -20,74 +35,28 @@ namespace Hosts
 		public HostsItem(string ip, string[] hosts, string comment = "")
 		{
 			Enabled = true;
-			IP = ip;
+			IP = new NetAddress(ip);
 			Aliases = new HostAliases(hosts);
 			Comment = comment;
 			Valid = true;
 		}
 
-		public HostsItem(string text, bool resetFormat = false)
+		public HostsItem(NetAddress ip, HostName host, string comment = "")
 		{
-			ResetFormat = resetFormat;
-			Parse(text);
+			Enabled = true;
+			IP = ip;
+			Aliases = new HostAliases(host);
+			Comment = comment;
+			Valid = true;
 		}
 
-		public bool Valid { get; protected set; }
-
-		private bool enabled;
-		public bool Enabled
+		public HostsItem(NetAddress ip, HostAliases hosts, string comment = "")
 		{
-			get { return enabled; }
-			set { if (enabled != value) { enabled = value; changed = true; } }
-		}
-
-		private bool hidden;
-		public bool Hidden
-		{
-			get { return hidden; }
-			set { if (hidden != value) { hidden = value; changed = true; } }
-		}
-
-		private string ip;
-		public string IP
-		{
-			get { return ip; }
-			set 
-			{
-				if (!HostsHelper.CheckIP(value)) throw new FormatException(String.Format("Invalid IP address '{0}'", value));
-				if (ip != value) 
-				{
-					ip = value; 
-					changed = true; 
-				} 
-			}
-		}
-
-		public IpType IpType 
-		{
-			get { return (Valid) ? HostsHelper.GetIpType(ip) : IpType.Invalid; }
-		}
-
-		public HostAliases Aliases { get; protected set; }
-		public bool Deleted { get { return Valid && (Aliases == null || Aliases.Count == 0); } }
-		public string Host
-		{
-			get { return Aliases[0]; }
-			set 
-			{
-				if (Aliases[0] != value)
-				{
-					Aliases[0] = value;
-					changed = true;
-				} 
-			}
-		}
-
-		private string comment;
-		public string Comment
-		{
-			get { return comment; }
-			set { if (comment != value) { comment = value; changed = true; } }
+			Enabled = true;
+			IP = ip;
+			Aliases = hosts;
+			Comment = comment;
+			Valid = true;
 		}
 
 		private static Regex HostRowPattern = new Regex(@"^#?\s*"
@@ -95,44 +64,53 @@ namespace Hosts
 				+ @"(?<hosts>(([a-z0-9][-_a-z0-9]*\.?)+\s*)+)"
 				+ @"(?:#\s*(?<comment>.*?)\s*)?$",
 				RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled);
-		private string text;
-		private bool changed;
-		public string Text { get { return ToString(); } set { Parse(value); } }
+
+		private string ParsedString;
+		protected ulong ParsedHash;
+		public string RawString 
+		{
+			get 
+			{
+				bool format = ResetFormat || String.IsNullOrEmpty(ParsedString) || ParsedHash != HalfMD5.ComputeHash(ToString());
+				return format ? ToString(false) : ParsedString;
+			}
+			set	
+			{
+				Parse(value);
+			}
+		}
 
 		public bool Parse(string value)
 		{
-			text = value;
-			changed = false;
+			ParsedString = value;
 			try
 			{
 				var match = HostRowPattern.Match(value);
 				if (!match.Success) throw new FormatException();
-				enabled = value[0] != '#';
-				ip = match.Groups["ip"].Value;
-				if (!HostsHelper.CheckIP(ip)) throw new FormatException();
+				Enabled = value[0] != '#';
+				IP = new NetAddress(match.Groups["ip"].Value);
 				Aliases = new HostAliases(match.Groups["hosts"].Value);
-				comment = match.Groups["comment"].Value;
-				hidden = false;
-				if (!String.IsNullOrEmpty(comment))
+				Comment = match.Groups["comment"].Value;
+				Hidden = false;
+				if (!String.IsNullOrEmpty(Comment))
 				{
-					hidden = comment[0] == '!';
-					if (hidden) comment = comment.Substring(1).Trim();
+					Hidden = Comment[0] == '!';
+					if (Hidden) Comment = Comment.Substring(1).Trim();
 				}
 				Valid = true;
 			}
 			catch
 			{
-				enabled = false;
-				hidden = false;
-				ip = null;
+				Enabled = false;
+				Hidden = false;
+				IP = null;
 				Aliases = null;
-				comment = null;
+				Comment = null;
 				Valid = false;
 			}
+			ParsedHash = HalfMD5.ComputeHash(ToString());
 			return Valid;
 		}
-
-		public bool ResetFormat { get; set; }
 
 		public override string ToString()
 		{
@@ -141,9 +119,9 @@ namespace Hosts
 
 		public string ToString(bool idn)
 		{
-			if (Valid && (ResetFormat || changed || String.IsNullOrEmpty(text)))
+			if (Valid)
 			{
-				string result = String.Format("{0,-18} {1,-31} ", (Enabled ? "" : "# ") + IP, Aliases.ToString(idn));
+				string result = String.Format("{0,-18} {1,-31} ", (Enabled ? "" : "# ") + IP.ToString(), Aliases.ToString(idn));
 				if (!String.IsNullOrEmpty(Comment) || Hidden) result += "#";
 				if (Hidden) result += "!"; else result += " ";
 				if (!String.IsNullOrEmpty(Comment)) result += Comment;
@@ -151,8 +129,7 @@ namespace Hosts
 			}
 			else
 			{
-				if(!ResetFormat) return text;
-				string result = text.Trim();
+				string result = ParsedString.Trim();
 				if (result.Length > 0 && result[0] != '#') result = "# " + result;
 				return result;
 			}

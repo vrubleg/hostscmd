@@ -2,43 +2,114 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
+using System.IO;
 
 namespace Hosts
 {
-	public class HostsEditor : HostsList
+	public class HostsEditor : List<HostsItem>
 	{
-		public HostsEditor(string fileName) : base (fileName) { }
+		public string FileName { get; set; }
+		public Encoding Encoding { get; protected set; }
 
-		public HostsItem Get(string host)
+		public HostsEditor(string fileName = null) : base()
 		{
-			return this.Find(item => item.Valid && item.Host == host);
+			FileName = fileName;
+			Encoding = new UTF8Encoding(false);
 		}
 
-		public List<HostsItem> GetMatch(string pattern)
+		private bool IsUTF8(byte[] data)
 		{
-			pattern = "^" + pattern.Replace(".", @"\.").Replace("?", ".").Replace("*", ".*") + "$";
-			Regex regex = new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled);
-			return this.FindAll(item => item.Valid && regex.IsMatch(item.Host));
-		}
-
-		public bool Exists(string host)
-		{
-			return (Get(host) != null);
-		}
-
-		public void Add(string host, string ip, string comment = "")
-		{
-			this.Add(new HostsItem(ip, host, comment));
-		}
-
-		public void Remove(string host)
-		{
-			HostsItem Found = Get(host);
-			if (Found != null)
+			try
 			{
-				this.Remove(Found);
+				new UTF8Encoding(false, true).GetCharCount(data);
+				return true;
 			}
+			catch
+			{
+				return false;
+			}
+		}
+
+		public void Load()
+		{
+			Load(FileName);
+		}
+
+		public void Load(string fileName)
+		{
+			Clear();
+			byte[] HostsData = File.ReadAllBytes(fileName);
+			Encoding = (IsUTF8(HostsData)) ? new UTF8Encoding(false) : Encoding.Default;
+			var HostsReader = new StreamReader(new MemoryStream(HostsData), Encoding);
+			string line;
+			while ((line = HostsReader.ReadLine()) != null)
+			{
+				HostsItem item = new HostsItem(line);
+				this.Add(item);
+			}
+		}
+
+		public void Save()
+		{
+			Save(FileName);
+		}
+
+		public void Save(string fileName)
+		{
+			var HostsStream = new FileStream(fileName, FileMode.Create, FileAccess.Write);
+			var HostsWriter = new StreamWriter(HostsStream, Encoding);
+			foreach (HostsItem item in this)
+			{
+				if (item.Deleted) break;
+				HostsWriter.WriteLine(item.RawString);
+			}
+			HostsWriter.Close();
+		}
+
+		/*public bool Add(NetAddress ip, HostName host, string comment = "")
+		{
+			
+		}*/
+
+		public void ResetFormat(bool resetFormat = true)
+		{
+			this.ForEach(item => item.ResetFormat = resetFormat);
+		}
+
+		public void RemoveInvalid()
+		{
+			this.RemoveAll(item => !item.Valid || item.Deleted);
+		}
+
+		public void RemoveDeleted()
+		{
+			this.RemoveAll(item => item.Deleted);
+		}
+
+		public int RemoveLinesWithHost(HostName host)
+		{
+			return this.RemoveAll(item => item.Valid && item.Aliases.Contains(host));
+		}
+
+		public int RemoveLinesWithHost(HostName host, bool IPv6)
+		{
+			return this.RemoveAll(item => item.Valid && item.IP.IPv6 == IPv6 && item.Aliases.Contains(host));
+		}
+
+		public int RemoveLinesWithIp(NetAddress ip)
+		{
+			return this.RemoveAll(item => item.Valid && item.IP == ip);
+		}
+
+		public List<HostsItem> GetValid()
+		{
+			return this.FindAll(item => item.Valid || !item.Deleted);
+		}
+
+		public List<HostsItem> GetMatched(string pattern)
+		{
+			var wp = new WildcardPattern(pattern);
+			return this.FindAll(item => item.Valid && item.Aliases.IsMatch(wp));
 		}
 	}
 }
