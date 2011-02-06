@@ -5,6 +5,8 @@ using System.Text;
 using Microsoft.Win32;
 using System.Reflection;
 using System.Diagnostics;
+using System.Security.Permissions;
+using System.Security;
 
 namespace Hosts
 {
@@ -19,10 +21,18 @@ namespace Hosts
 	{
 		static string GetHostsFileName()
 		{
-			RegistryKey HostsRegKey = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\");
-			string HostsPath = (string)HostsRegKey.GetValue("DataBasePath");
-			HostsRegKey.Close();
-			return Environment.ExpandEnvironmentVariables(HostsPath + @"\hosts");
+			try
+			{
+				RegistryKey HostsRegKey = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\");
+				string HostsPath = (string)HostsRegKey.GetValue("DataBasePath");
+				HostsRegKey.Close();
+				if (HostsPath.Trim() == "") throw new Exception("Empty path");
+				return Environment.ExpandEnvironmentVariables(HostsPath + @"\hosts");
+			}
+			catch (Exception e)
+			{
+				throw new Exception("Cannot get path to the hosts file from the registry", e);
+			}
 		}
 
 		static T GetAssemblyAttribute<T>()
@@ -49,7 +59,8 @@ namespace Hosts
 			Console.WriteLine(GetCopyright());
 			Console.WriteLine();
 			Console.WriteLine("Usage:");
-			Console.WriteLine("  hosts [add|set|new] <host> <addr> <comment>");
+			Console.WriteLine("  hosts [add|new]     <host> <aliases> <addr> # <comment>");
+			Console.WriteLine("  hosts [set|update]  <host|mask> <addr> # <comment>");
 			Console.WriteLine("  hosts [rem|del]     <host|mask>");
 			Console.WriteLine("  hosts [enable|on]   <host|mask>");
 			Console.WriteLine("  hosts [disable|off] <host|mask>");
@@ -59,6 +70,7 @@ namespace Hosts
 			Console.WriteLine("  hosts print    - display raw hosts file");
 			Console.WriteLine("  hosts format   - format host rows");
 			Console.WriteLine("  hosts clean    - remove all comments");
+			Console.WriteLine("  hosts rollback - rollback last operation");
 			Console.WriteLine("  hosts backup   - backup hosts file");
 			Console.WriteLine("  hosts restore  - restore hosts file from backup");
 			Console.WriteLine("  hosts recreate - empty hosts file");
@@ -66,6 +78,7 @@ namespace Hosts
 		}
 
 		static HostsEditor Hosts;
+		static Queue<string> ArgsQueue;
 	
 		static void View(string mask, bool? visibleOnly = null, bool? enabledOnly = null)
 		{
@@ -94,10 +107,14 @@ namespace Hosts
 		{
 			try
 			{
-				// var ArgsQueue = new Queue<string>(args);
-				string Mode = (args.Length > 0) ? args[0].Trim().ToLower() : "default";
+				ArgsQueue = new Queue<string>(args);
+				string Mode = (ArgsQueue.Count > 0) ? ArgsQueue.Dequeue().ToLower() : "default";
 				string HostsFile = GetHostsFileName();
 				string BackupHostsFile = HostsFile + ".backup";
+				string RollbackHostsFile = HostsFile + ".rollback";
+				FileIOPermission HostsPermissions = new FileIOPermission(FileIOPermissionAccess.AllAccess, HostsFile);
+				if (!SecurityManager.IsGranted(HostsPermissions)) throw new Exception("No write permission to the hosts file");
+
 				if (!File.Exists(HostsFile)) File.WriteAllText(HostsFile, new HostsItem("127.0.0.1", "localhost").ToString());
 				if (!File.Exists(BackupHostsFile)) File.Copy(HostsFile, BackupHostsFile);
 
@@ -108,14 +125,24 @@ namespace Hosts
 						return;
 
 					case "backup":
+						if (ArgsQueue.Count > 0) BackupHostsFile = HostsFile + "." + ArgsQueue.Dequeue().ToLower();
 						File.Copy(HostsFile, BackupHostsFile, true);
 						Console.WriteLine("[OK] Hosts file backed up successfully");
 						return;
 
 					case "restore":
+						if (ArgsQueue.Count > 0) BackupHostsFile = HostsFile + "." + ArgsQueue.Dequeue().ToLower();
 						if (!File.Exists(BackupHostsFile)) throw new Exception("Backup file is not exists");
+						File.Copy(HostsFile, RollbackHostsFile, true);
 						File.Copy(BackupHostsFile, HostsFile, true);
 						Console.WriteLine("[OK] Hosts file restored successfully");
+						return;
+
+					case "rollback":
+						if (!File.Exists(RollbackHostsFile)) throw new Exception("Rollback file is not exists");
+						if (File.Exists(HostsFile)) File.Delete(HostsFile);
+						File.Move(RollbackHostsFile, HostsFile);
+						Console.WriteLine("[OK] Hosts file rolled back successfully");
 						return;
 
 					case "recreate":
@@ -136,7 +163,7 @@ namespace Hosts
 				{
 					case "default":
 						Console.WriteLine(GetTitle());
-						Console.WriteLine("Usage: hosts < add | rem | on | off | view | help >");
+						Console.WriteLine("Usage: hosts < add | set | rem | on | off | view | help >");
 						Console.WriteLine("Hosts file: " + Hosts.FileName.ToLower());
 						Console.WriteLine();
 						View("*", true, true);
@@ -151,26 +178,7 @@ namespace Hosts
 					case "list":
 					case "view":
 					case "select":
-						bool? visibleOnly = null;
-						bool? enabledOnly = null;
-						string mask = "*";
-						for (int i = 1; i < args.Length; i++)
-						{
-							string arg = args[i].ToLower();
-							switch (arg)
-							{
-								case "enabled":		enabledOnly = true;		break;
-								case "disabled":	enabledOnly = false;	break;
-								case "hidden":		visibleOnly = false;	break;
-								case "visible":		visibleOnly = true;		break;
-								default:
-									mask = arg;
-									if (!mask.StartsWith("*")) mask = '*' + mask;
-									if (!mask.EndsWith("*")) mask += '*';
-									break;
-							}
-						}
-						View(mask, visibleOnly, enabledOnly);
+						RunListMode();
 						return;
 
 					case "format":
@@ -186,36 +194,20 @@ namespace Hosts
 
 					case "add":
 					case "new":
-						if (args.Length == 1) throw new HostNotSpecifiedException();
-						// TODO
+						RunAddMode();
 						break;
 
 					case "set":
 					case "change":
 					case "update":
-						if (args.Length == 1) throw new HostNotSpecifiedException();
-						/*HostsItem LineItem = Hosts.Get(args[1]);
-						if (LineItem == null)
-						{
-							if (args.Length > 3) Hosts.Add(args[1], args[2], args[3]);
-							else if (args.Length > 2) Hosts.Add(args[1], args[2]);
-							else Hosts.Add(args[1], "127.0.0.1");
-							LineItem = Hosts.Get(args[1]);
-							Console.WriteLine("[ADDED] {0} {1}", LineItem.Host, LineItem.IP);
-						}
-						else
-						{
-							if (args.Length > 2) LineItem.IP = args[2];
-							if (args.Length > 3) LineItem.Comment = args[3];
-							Console.WriteLine("[UPDATED] {0} {1}", LineItem.Host, LineItem.IP);
-						}*/
+						RunUpdateMode();
 						break;
 
 					case "rem":
 					case "remove":
 					case "del":
 					case "delete":
-						if (args.Length == 1) throw new HostNotSpecifiedException();
+						if (ArgsQueue.Count == 0) throw new HostNotSpecifiedException();
 						Lines = Hosts.GetMatched(args[1]);
 						if (Lines.Count == 0) throw new HostNotFoundException(args[1]);
 						foreach (HostsItem Line in Lines)
@@ -227,7 +219,7 @@ namespace Hosts
 
 					case "on":
 					case "enable":
-						if (args.Length == 1) throw new HostNotSpecifiedException();
+						if (ArgsQueue.Count == 0) throw new HostNotSpecifiedException();
 						Lines = Hosts.GetMatched(args[1]);
 						if (Lines.Count == 0) throw new HostNotFoundException(args[1]);
 						foreach (HostsItem Line in Lines)
@@ -239,7 +231,7 @@ namespace Hosts
 
 					case "off":
 					case "disable":
-						if (args.Length == 1) throw new HostNotSpecifiedException();
+						if (ArgsQueue.Count == 0) throw new HostNotSpecifiedException();
 						Lines = Hosts.GetMatched(args[1]);
 						if (Lines.Count == 0) throw new HostNotFoundException(args[1]);
 						foreach (HostsItem Line in Lines)
@@ -250,7 +242,7 @@ namespace Hosts
 						break;
 
 					case "hide":
-						if (args.Length == 1) throw new HostNotSpecifiedException();
+						if (ArgsQueue.Count == 0) throw new HostNotSpecifiedException();
 						Lines = Hosts.GetMatched(args[1]);
 						if (Lines.Count == 0) throw new HostNotFoundException(args[1]);
 						foreach (HostsItem Line in Lines)
@@ -261,7 +253,7 @@ namespace Hosts
 						break;
 
 					case "show":
-						if (args.Length == 1) throw new HostNotSpecifiedException();
+						if (ArgsQueue.Count == 0) throw new HostNotSpecifiedException();
 						Lines = Hosts.GetMatched(args[1]);
 						if (Lines.Count == 0) throw new HostNotFoundException(args[1]);
 						foreach (HostsItem Line in Lines)
@@ -275,6 +267,7 @@ namespace Hosts
 						Help();
 						return;
 				}
+				File.Copy(HostsFile, RollbackHostsFile, true);
 				Hosts.Save();
 			}
 			catch (HostNotSpecifiedException)
@@ -288,6 +281,114 @@ namespace Hosts
 			catch (Exception e)
 			{
 				Console.WriteLine("[ERROR] " + e.Message);
+			}
+		}
+
+		static void RunListMode()
+		{
+			bool? visibleOnly = null;
+			bool? enabledOnly = null;
+			string mask = "*";
+			while (ArgsQueue.Count > 0)
+			{
+				string arg = ArgsQueue.Dequeue().ToLower();
+				switch (arg)
+				{
+					case "enabled": enabledOnly = true; break;
+					case "disabled": enabledOnly = false; break;
+					case "hidden": visibleOnly = false; break;
+					case "visible": visibleOnly = true; break;
+					default:
+						mask = arg;
+						if (!mask.StartsWith("*")) mask = '*' + mask;
+						if (!mask.EndsWith("*")) mask += '*';
+						break;
+				}
+			}
+			View(mask, visibleOnly, enabledOnly);
+		}
+
+		static void RunAddMode()
+		{
+			if (ArgsQueue.Count == 0) throw new HostNotSpecifiedException();
+			HostAliases aliases = new HostAliases();
+			NetAddress address = new NetAddress("127.0.0.1");
+			string comment = "";
+			bool inComment = false;
+
+			while (ArgsQueue.Count > 0)
+			{
+				string arg = ArgsQueue.Dequeue();
+				if (inComment)
+				{
+					comment += arg + " ";
+					continue;
+				}
+				if (arg.Length > 0 && arg[0] == '#')
+				{
+					inComment = true;
+					comment = (arg.Length > 1) ? (arg.Substring(1) + " ") : "";
+					continue;
+				}
+				arg = arg.ToLower();
+				NetAddress TestAddress = NetAddress.TryCreate(arg);
+				if (TestAddress != null)
+				{
+					address = TestAddress;
+					continue;
+				}
+				HostName TestHostName = HostName.TryCreate(arg);
+				if (TestHostName != null)
+				{
+					aliases.Add(TestHostName);
+					continue;
+				}
+				throw new Exception(String.Format("Unknown argument '{0}'", arg));
+			}
+
+			HostsItem line = new HostsItem(address, aliases, comment);
+			Hosts.Add(line);
+			Console.WriteLine("[ADDED] {0} {1}", line.IP.ToString(), line.Aliases.ToString());
+		}
+
+		static void RunUpdateMode()
+		{
+			if (ArgsQueue.Count == 0) throw new HostNotSpecifiedException();
+			string mask = ArgsQueue.Dequeue();
+			List<HostsItem> lines = Hosts.GetMatched(mask);
+			if (lines.Count == 0) throw new HostNotFoundException(mask);
+			NetAddress address = null;
+			string comment = null;
+			bool inComment = false;
+
+			while (ArgsQueue.Count > 0)
+			{
+				string arg = ArgsQueue.Dequeue();
+				if (inComment)
+				{
+					comment += arg + " ";
+					continue;
+				}
+				if (arg.Length > 0 && arg[0] == '#')
+				{
+					inComment = true;
+					comment = (arg.Length > 1) ? (arg.Substring(1) + " ") : "";
+					continue;
+				}
+				arg = arg.ToLower();
+				NetAddress TestAddress = NetAddress.TryCreate(arg);
+				if (TestAddress != null)
+				{
+					address = TestAddress;
+					continue;
+				}
+			}
+
+			foreach (HostsItem line in lines)
+			{
+				if (address != null) line.IP = address;
+				if (comment != null) line.Comment = comment;
+				Console.WriteLine("[UPDATED] {0} {1}", line.IP.ToString(), line.Aliases.ToString());
 			}
 		}
 	}

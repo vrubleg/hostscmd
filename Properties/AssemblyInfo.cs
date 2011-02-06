@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Hosts Commander v1.2 [03.12.2010]")]
+[assembly: AssemblyTitle("Hosts Commander v1.3 [06.02.2011]")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("http://veg.slutsk.net/")]
 [assembly: AssemblyProduct("Hosts Commander")]
-[assembly: AssemblyCopyright("(c) 2010 Evgeny Vrublevsky <veg@tut.by>")]
+[assembly: AssemblyCopyright("(c) 2010-2011 Evgeny Vrublevsky <veg@tut.by>")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -32,5 +32,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.2.0.0")]
-[assembly: AssemblyFileVersion("1.2.0.0")]
+[assembly: AssemblyVersion("1.3.0.0")]
+[assembly: AssemblyFileVersion("1.3.0.0")]

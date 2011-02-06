@@ -7,11 +7,21 @@ hosts list [enabled|disabled] [visible|hidden] <mask>
  - Пример: list enabled visible local*
  - Пример: list vk
 
-hosts add <host> <addr> <comment>
- - Добавляет новый хост, <addr> по умолчанию 127.0.0.1, <comment> можно не указывать
- - Алиасы: set, new
+hosts add <host> <aliases> <addr> # <comment>
+ - Добавляет новый хост, <addr> по умолчанию 127.0.0.1
+ - Парамер <aliases> может отсутствовать
+ - Параметры до # могут иметь произвольный порядок
+ - Всё что после # — комментарий
+ - Алиасы: new
  - Пример: hosts add myhost.dev
- - Пример: hosts add another.dev 192.168.1.1 "Remote host"
+ - Пример: hosts add another.dev 192.168.1.1 # Remote host
+
+hosts set <host|mask> <addr> # <comment>
+ - Обновляет IP адрес или комментарий хоста
+ - Всё что после # — комментарий
+ - Алиасы: update, change
+ - Пример: hosts set myhost.dev # new comment
+ - Пример: hosts set another.dev 192.168.1.1
 
 hosts rem <host|mask>
  - Удаляет конкретный хост или соответствующие маске
@@ -45,11 +55,16 @@ hosts format
 hosts clean
  - Удаляет комментарии и форматирует строки в файле
 
-hosts backup
+hosts backup <name>
  - Делает резервную копию файла hosts
+ - Параметр <name> не обязателен, по умолчанию он — backup
 
-hosts restore
+hosts restore <name>
  - Восстанавливает файл hosts из резервной копии
+ - Параметр <name> не обязателен, по умолчанию он — backup
+
+hosts rollback
+ - Откатывает последнюю операцию с файлом hosts
 
 hosts recreate
  - Создаёт новый hosts файл с одним хостом — localhost
@@ -59,6 +74,15 @@ hosts open
 
 
 История изменений
+
+v1.3 [06.02.2011]
+ - Поддержка IDN (на экране отображается в декодированном виде)
+ - Поддержка IPv6 адресов
+ - Поддержка алиасов (несколько доменных имён в строке)
+ - Новая операция rollback для отмены работы последней команды
+ - add и set — разные команды (добавление и обновление соотвественно)
+ - Команда add сама догадывается о порядке параметров, всё что после # — комментарий
+ - Возможность создавать несколько резервных копий hosts, задавая имя копии
 
 v1.2 [03.12.2010]
  - Программа требует для запуска администраторские права
@@ -87,4 +111,4 @@ v0.1 [22.07.2009]
  - Так и не была реализована до конца
 
 
-(С) 2010 Evgeny Vrublevsky <veg@tut.by>
+(С) 2010-2011 Evgeny Vrublevsky <veg@tut.by>

@@ -66,10 +66,10 @@ namespace Hosts
 			HostsWriter.Close();
 		}
 
-		/*public bool Add(NetAddress ip, HostName host, string comment = "")
+		public void Add(NetAddress ip, HostAliases hosts, string comment = "")
 		{
-			
-		}*/
+			base.Add(new HostsItem(ip, hosts, comment));
+		}
 
 		public void ResetFormat(bool resetFormat = true)
 		{
@@ -106,10 +106,17 @@ namespace Hosts
 			return this.FindAll(item => item.Valid || !item.Deleted);
 		}
 
-		public List<HostsItem> GetMatched(string pattern)
+		public List<HostsItem> GetMatched(string pattern, Func<HostsItem, bool> check = null)
 		{
 			var wp = new WildcardPattern(pattern);
-			return this.FindAll(item => item.Valid && item.Aliases.IsMatch(wp));
+			if (check == null)
+			{
+				return this.FindAll(item => item.Valid && item.Aliases.IsMatch(wp));
+			}
+			else
+			{
+				return this.FindAll(item => item.Valid && item.Aliases.IsMatch(wp) && check(item));
+			}
 		}
 	}
 }
