@@ -75,6 +75,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FileAssoc.cs" />
     <Compile Include="HalfMD5.cs" />
     <Compile Include="HostAliases.cs" />
     <Compile Include="HostName.cs" />

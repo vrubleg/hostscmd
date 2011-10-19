@@ -53,28 +53,39 @@ namespace Hosts
 			return (TitleAttribute == null) ? String.Empty : TitleAttribute.Title;
 		}
 
-		static void Help()
+		static void Help(bool interactive)
 		{
-			Console.WriteLine(GetTitle());
-			Console.WriteLine(GetCopyright());
-			Console.WriteLine();
-			Console.WriteLine("Usage:");
-			Console.WriteLine("  hosts [add|new]     <host> <aliases> <addr> # <comment>");
-			Console.WriteLine("  hosts [set|update]  <host|mask> <addr> # <comment>");
-			Console.WriteLine("  hosts [rem|del]     <host|mask>");
-			Console.WriteLine("  hosts [enable|on]   <host|mask>");
-			Console.WriteLine("  hosts [disable|off] <host|mask>");
-			Console.WriteLine("  hosts hide          <host|mask>");
-			Console.WriteLine("  hosts show          <host|mask>");
-			Console.WriteLine("  hosts [list|view]   [enabled|disabled] [visible|hidden] <mask>");
-			Console.WriteLine("  hosts print    - display raw hosts file");
-			Console.WriteLine("  hosts format   - format host rows");
-			Console.WriteLine("  hosts clean    - remove all comments");
-			Console.WriteLine("  hosts rollback - rollback last operation");
-			Console.WriteLine("  hosts backup   - backup hosts file");
-			Console.WriteLine("  hosts restore  - restore hosts file from backup");
-			Console.WriteLine("  hosts recreate - empty hosts file");
-			Console.WriteLine("  hosts open     - open hosts file in notepad");
+			if (!interactive)
+			{
+				Console.WriteLine(GetTitle());
+				Console.WriteLine(GetCopyright());
+				Console.WriteLine();
+				Console.WriteLine("Usage:");
+				Console.WriteLine("  hosts - run hosts command interpreter");
+				Console.WriteLine("  hosts <command> <params> - execute hosts command");
+				Console.WriteLine();
+			}
+			Console.WriteLine("Commands:");
+			Console.WriteLine("  [add|new]     <host> <aliases> <addr> # <comment>");
+			Console.WriteLine("  [set|update]  <host|mask> <addr> # <comment>");
+			Console.WriteLine("  [rem|del]     <host|mask>");
+			Console.WriteLine("  [enable|on]   <host|mask>");
+			Console.WriteLine("  [disable|off] <host|mask>");
+			Console.WriteLine("  hide          <host|mask>");
+			Console.WriteLine("  show          <host|mask>");
+			Console.WriteLine("  [list|view]   [all] <mask>");
+			Console.WriteLine("  print    - display raw hosts file");
+			Console.WriteLine("  format   - format host rows");
+			Console.WriteLine("  clean    - remove all comments");
+			Console.WriteLine("  rollback - rollback last operation");
+			Console.WriteLine("  backup   - backup hosts file");
+			Console.WriteLine("  restore  - restore hosts file from backup");
+			Console.WriteLine("  recreate - empty hosts file");
+			Console.WriteLine("  open     - open hosts file in notepad");
+			if (interactive)
+			{
+				Console.WriteLine("  exit     - exit from command interpreter");
+			}
 		}
 
 		static HostsEditor Hosts;
@@ -103,12 +114,12 @@ namespace Hosts
 			Console.WriteLine("Enabled: {0,-4} Disabled: {1,-4} Hidden: {2,-4}", enabled, disabled, hidden);
 		}
 
-		static void Main(string[] args)
+		static void Run(string[] args, bool interactive)
 		{
 			try
 			{
 				ArgsQueue = new Queue<string>(args);
-				string Mode = (ArgsQueue.Count > 0) ? ArgsQueue.Dequeue().ToLower() : "default";
+				string Mode = (ArgsQueue.Count > 0) ? ArgsQueue.Dequeue().ToLower() : "help";
 				string HostsFile = GetHostsFileName();
 				string BackupHostsFile = HostsFile + ".backup";
 				string RollbackHostsFile = HostsFile + ".rollback";
@@ -121,7 +132,8 @@ namespace Hosts
 				switch (Mode)
 				{
 					case "open":
-						Process.Start("notepad", '"' + HostsFile + '"');
+						var exe = FileAssoc.GetExecutable(".txt") ?? "notepad";
+						Process.Start(exe, '"' + HostsFile + '"');
 						return;
 
 					case "backup":
@@ -151,7 +163,7 @@ namespace Hosts
 						return;
 
 					case "help":
-						Help();
+						Help(interactive);
 						return;
 				}
 
@@ -161,14 +173,6 @@ namespace Hosts
 				List<HostsItem> Lines;
 				switch (Mode)
 				{
-					case "default":
-						Console.WriteLine(GetTitle());
-						Console.WriteLine("Usage: hosts < add | set | rem | on | off | view | help >");
-						Console.WriteLine("Hosts file: " + Hosts.FileName.ToLower());
-						Console.WriteLine();
-						View("*", true, true);
-						return;
-
 					case "print":
 					case "raw":
 					case "file":
@@ -178,7 +182,7 @@ namespace Hosts
 					case "list":
 					case "view":
 					case "select":
-						RunListMode();
+						RunListMode(interactive);
 						return;
 
 					case "format":
@@ -264,7 +268,9 @@ namespace Hosts
 						break;
 
 					default:
-						Help();
+						Console.WriteLine("[ERROR] Unknown command");
+						Console.WriteLine();
+						Help(interactive);
 						return;
 				}
 				File.Copy(HostsFile, RollbackHostsFile, true);
@@ -284,27 +290,33 @@ namespace Hosts
 			}
 		}
 
-		static void RunListMode()
+		static void RunListMode(bool interactive)
 		{
-			bool? visibleOnly = null;
-			bool? enabledOnly = null;
+			if (!interactive)
+			{
+				Console.WriteLine(GetTitle());
+				Console.WriteLine("Hosts file: " + Hosts.FileName.ToLower());
+				Console.WriteLine();
+			}
+
+			bool? visibleOnly = true;
+			bool? enabledOnly = true;
 			string mask = "*";
-			while (ArgsQueue.Count > 0)
+
+			if (ArgsQueue.Count > 0)
 			{
 				string arg = ArgsQueue.Dequeue().ToLower();
-				switch (arg)
+				if (arg == "all")
 				{
-					case "enabled": enabledOnly = true; break;
-					case "disabled": enabledOnly = false; break;
-					case "hidden": visibleOnly = false; break;
-					case "visible": visibleOnly = true; break;
-					default:
-						mask = arg;
-						if (!mask.StartsWith("*")) mask = '*' + mask;
-						if (!mask.EndsWith("*")) mask += '*';
-						break;
+					visibleOnly = null;
+					enabledOnly = null;
+					arg = (ArgsQueue.Count > 0) ? ArgsQueue.Dequeue().ToLower() : "*";
 				}
+				mask = arg;
+				if (!mask.StartsWith("*")) mask = '*' + mask;
+				if (!mask.EndsWith("*")) mask += '*';
 			}
+
 			View(mask, visibleOnly, enabledOnly);
 		}
 
@@ -389,6 +401,38 @@ namespace Hosts
 				if (address != null) line.IP = address;
 				if (comment != null) line.Comment = comment;
 				Console.WriteLine("[UPDATED] {0} {1}", line.IP.ToString(), line.Aliases.ToString());
+			}
+		}
+
+		static void Main(string[] args)
+		{
+			try
+			{
+				if (args.Length > 0)
+				{
+					Run(args, false);
+				}
+				else
+				{
+					Console.WriteLine(GetTitle());
+					Console.WriteLine(GetCopyright());
+					Console.WriteLine("Hosts file: " + GetHostsFileName().ToLower());
+					Console.WriteLine();
+					while (true)
+					{
+						Console.Write("hosts> ");
+						var command = Console.ReadLine().Trim();
+						if (command == "") continue;
+						if (command == "exit" || command == "quit") break;
+						args = command.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+						Run(args, true);
+						Console.WriteLine();
+					}
+				}
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine("[ERROR] " + e.Message);
 			}
 		}
 	}
