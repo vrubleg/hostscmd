@@ -66,25 +66,25 @@ namespace Hosts
 				Console.WriteLine();
 			}
 			Console.WriteLine("Commands:");
-			Console.WriteLine("  [add|new]     <host> <aliases> <addr> # <comment>");
-			Console.WriteLine("  [set|update]  <host|mask> <addr> # <comment>");
-			Console.WriteLine("  [rem|del]     <host|mask>");
-			Console.WriteLine("  [enable|on]   <host|mask>");
-			Console.WriteLine("  [disable|off] <host|mask>");
-			Console.WriteLine("  hide          <host|mask>");
-			Console.WriteLine("  show          <host|mask>");
-			Console.WriteLine("  [list|view]   [all] <mask>");
-			Console.WriteLine("  print    - display raw hosts file");
-			Console.WriteLine("  format   - format host rows");
-			Console.WriteLine("  clean    - remove all comments");
-			Console.WriteLine("  rollback - rollback last operation");
-			Console.WriteLine("  backup   - backup hosts file");
-			Console.WriteLine("  restore  - restore hosts file from backup");
-			Console.WriteLine("  recreate - empty hosts file");
-			Console.WriteLine("  open     - open hosts file in notepad");
+			Console.WriteLine("  add  <host> <aliases> <addr> # <comment>   - add new host");
+			Console.WriteLine("  set  <host|mask> <addr> # <comment>        - set ip and comment for host");
+			Console.WriteLine("  rem  <host|mask>   - remove host");
+			Console.WriteLine("  on   <host|mask>   - enable host");
+			Console.WriteLine("  off  <host|mask>   - disable host");
+			Console.WriteLine("  view [all] <mask>  - display enabled and visible, or all hosts");
+			Console.WriteLine("  hide <host|mask>   - hide host from 'hosts view'");
+			Console.WriteLine("  show <host|mask>   - show host in 'hosts view'");
+			Console.WriteLine("  print      - display raw hosts file");
+			Console.WriteLine("  format     - format host rows");
+			Console.WriteLine("  clean      - format and remove all comments");
+			Console.WriteLine("  rollback   - rollback last operation");
+			Console.WriteLine("  backup     - backup hosts file");
+			Console.WriteLine("  restore    - restore hosts file from backup");
+			Console.WriteLine("  recreate   - empty hosts file");
+			Console.WriteLine("  open       - open hosts file in notepad");
 			if (interactive)
 			{
-				Console.WriteLine("  exit     - exit from command interpreter");
+				Console.WriteLine("  exit       - exit from command interpreter");
 			}
 		}
 
@@ -423,6 +423,10 @@ namespace Hosts
 						Console.Write("hosts> ");
 						var command = Console.ReadLine().Trim();
 						if (command == "") continue;
+						if (command.StartsWith("hosts "))
+						{
+							command = command.Substring(6).TrimStart();
+						}
 						if (command == "exit" || command == "quit") break;
 						args = command.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 						Run(args, true);
