@@ -19,8 +19,14 @@ namespace Hosts
 
 	class Program
 	{
+		static bool IsUnix;
+
 		static string GetHostsFileName()
 		{
+			if (IsUnix)
+			{
+				return "/etc/hosts";
+			}
 			try
 			{
 				RegistryKey HostsRegKey = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\");
@@ -81,7 +87,10 @@ namespace Hosts
 			Console.WriteLine("  backup     - backup hosts file");
 			Console.WriteLine("  restore    - restore hosts file from backup");
 			Console.WriteLine("  recreate   - empty hosts file");
-			Console.WriteLine("  open       - open hosts file in notepad");
+			if (!IsUnix)
+			{
+				Console.WriteLine("  open       - open hosts file in notepad");
+			}
 			if (interactive)
 			{
 				Console.WriteLine("  exit       - exit from command interpreter");
@@ -123,15 +132,21 @@ namespace Hosts
 				string HostsFile = GetHostsFileName();
 				string BackupHostsFile = HostsFile + ".backup";
 				string RollbackHostsFile = HostsFile + ".rollback";
+
+				// Check permissions
 				FileIOPermission HostsPermissions = new FileIOPermission(FileIOPermissionAccess.AllAccess, HostsFile);
 				if (!SecurityManager.IsGranted(HostsPermissions)) throw new Exception("No write permission to the hosts file");
 
-				if (!File.Exists(HostsFile)) File.WriteAllText(HostsFile, new HostsItem("127.0.0.1", "localhost").ToString());
-				if (!File.Exists(BackupHostsFile)) File.Copy(HostsFile, BackupHostsFile);
+				// Create default hosts file if not exists
+				if (!File.Exists(HostsFile))
+				{
+					File.WriteAllText(HostsFile, new HostsItem("127.0.0.1", "localhost").ToString());
+				}
 
 				switch (Mode)
 				{
 					case "open":
+						if (IsUnix) break;
 						var exe = FileAssoc.GetExecutable(".txt") ?? "notepad";
 						Process.Start(exe, '"' + HostsFile + '"');
 						return;
@@ -158,6 +173,7 @@ namespace Hosts
 						return;
 
 					case "recreate":
+						File.Copy(HostsFile, RollbackHostsFile, true);
 						File.WriteAllText(HostsFile, new HostsItem("127.0.0.1", "localhost").ToString());
 						Console.WriteLine("[OK] New hosts file created successfully");
 						return;
@@ -165,6 +181,16 @@ namespace Hosts
 					case "help":
 						Help(interactive);
 						return;
+				}
+
+				// Try to create backup on first run
+				if (!File.Exists(BackupHostsFile))
+				{
+					try
+					{
+						File.Copy(HostsFile, BackupHostsFile);
+					}
+					catch {}
 				}
 
 				Hosts = new HostsEditor(HostsFile);
@@ -408,6 +434,7 @@ namespace Hosts
 		{
 			try
 			{
+				IsUnix = (Environment.OSVersion.Platform == PlatformID.Unix) || (Environment.OSVersion.Platform == PlatformID.MacOSX);
 				if (args.Length > 0)
 				{
 					Run(args, false);
