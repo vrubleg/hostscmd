@@ -234,6 +234,7 @@ namespace Hosts
 						break;
 
 					case "rem":
+					case "rm":
 					case "remove":
 					case "del":
 					case "delete":
@@ -448,7 +449,7 @@ namespace Hosts
 					while (true)
 					{
 						Console.Write("hosts> ");
-						var command = Console.ReadLine().Trim();
+						var command = Console.ReadLine().Replace("\0", "").Trim();
 						if (command == "") continue;
 						if (command.StartsWith("hosts "))
 						{
