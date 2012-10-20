@@ -60,10 +60,10 @@ namespace Hosts
 		}
 
 		private static Regex HostRowPattern = new Regex(@"^#?\s*"
-				+ @"(?<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|[0-9a-f:]+)\s+"
-				+ @"(?<hosts>(([a-z0-9][-_a-z0-9]*\.?)+\s*)+)"
-				+ @"(?:#\s*(?<comment>.*?)\s*)?$",
-				RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled);
+			+ @"(?<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|[0-9a-f:]+)\s+"
+			+ @"(?<hosts>(([a-z0-9][-_a-z0-9]*\.?)+\s*)+)"
+			+ @"(?:#\s*(?<comment>.*?)\s*)?$",
+			RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled);
 
 		private string ParsedString;
 		protected ulong ParsedHash;

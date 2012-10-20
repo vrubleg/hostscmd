@@ -86,7 +86,7 @@ namespace Hosts
 			Console.WriteLine("  rollback   - rollback last operation");
 			Console.WriteLine("  backup     - backup hosts file");
 			Console.WriteLine("  restore    - restore hosts file from backup");
-			Console.WriteLine("  recreate   - empty hosts file");
+			Console.WriteLine("  empty      - empty hosts file");
 			if (!IsUnix)
 			{
 				Console.WriteLine("  open       - open hosts file in notepad");
@@ -149,13 +149,13 @@ namespace Hosts
 						if (IsUnix) break;
 						var exe = FileAssoc.GetExecutable(".txt") ?? "notepad";
 						Process.Start(exe, '"' + HostsFile + '"');
-						return;
+					return;
 
 					case "backup":
 						if (ArgsQueue.Count > 0) BackupHostsFile = HostsFile + "." + ArgsQueue.Dequeue().ToLower();
 						File.Copy(HostsFile, BackupHostsFile, true);
 						Console.WriteLine("[OK] Hosts file backed up successfully");
-						return;
+					return;
 
 					case "restore":
 						if (ArgsQueue.Count > 0) BackupHostsFile = HostsFile + "." + ArgsQueue.Dequeue().ToLower();
@@ -163,24 +163,25 @@ namespace Hosts
 						File.Copy(HostsFile, RollbackHostsFile, true);
 						File.Copy(BackupHostsFile, HostsFile, true);
 						Console.WriteLine("[OK] Hosts file restored successfully");
-						return;
+					return;
 
 					case "rollback":
 						if (!File.Exists(RollbackHostsFile)) throw new Exception("Rollback file is not exists");
 						if (File.Exists(HostsFile)) File.Delete(HostsFile);
 						File.Move(RollbackHostsFile, HostsFile);
 						Console.WriteLine("[OK] Hosts file rolled back successfully");
-						return;
+					return;
 
+					case "empty":
 					case "recreate":
 						File.Copy(HostsFile, RollbackHostsFile, true);
 						File.WriteAllText(HostsFile, new HostsItem("127.0.0.1", "localhost").ToString());
 						Console.WriteLine("[OK] New hosts file created successfully");
-						return;
+					return;
 
 					case "help":
 						Help(interactive);
-						return;
+					return;
 				}
 
 				// Try to create backup on first run
@@ -203,35 +204,35 @@ namespace Hosts
 					case "raw":
 					case "file":
 						Console.WriteLine(File.ReadAllText(Hosts.FileName, Hosts.Encoding));
-						return;
+					return;
 
 					case "list":
 					case "view":
 					case "select":
 						RunListMode(interactive);
-						return;
+					return;
 
 					case "format":
 						Hosts.ResetFormat();
 						Console.WriteLine("[OK] Hosts file formatted successfully");
-						break;
+					break;
 
 					case "clean":
 						Hosts.RemoveInvalid();
 						Hosts.ResetFormat();
 						Console.WriteLine("[OK] Hosts file cleaned successfully");
-						break;
+					break;
 
 					case "add":
 					case "new":
 						RunAddMode();
-						break;
+					break;
 
 					case "set":
 					case "change":
 					case "update":
 						RunUpdateMode();
-						break;
+					break;
 
 					case "rem":
 					case "rm":
@@ -246,7 +247,7 @@ namespace Hosts
 							Hosts.Remove(Line);
 							Console.WriteLine("[REMOVED] {0} {1}", Line.IP.ToString(), Line.Aliases.ToString());
 						}
-						break;
+					break;
 
 					case "on":
 					case "enable":
@@ -258,7 +259,7 @@ namespace Hosts
 							Line.Enabled = true;
 							Console.WriteLine("[ENABLED] {0} {1}", Line.IP.ToString(), Line.Aliases.ToString());
 						}
-						break;
+					break;
 
 					case "off":
 					case "disable":
@@ -270,7 +271,7 @@ namespace Hosts
 							Line.Enabled = false;
 							Console.WriteLine("[DISABLED] {0} {1}", Line.IP.ToString(), Line.Aliases.ToString());
 						}
-						break;
+					break;
 
 					case "hide":
 						if (ArgsQueue.Count == 0) throw new HostNotSpecifiedException();
@@ -281,7 +282,7 @@ namespace Hosts
 							Line.Hidden = true;
 							Console.WriteLine("[HIDDEN] {0} {1}", Line.IP.ToString(), Line.Aliases.ToString());
 						}
-						break;
+					break;
 
 					case "show":
 						if (ArgsQueue.Count == 0) throw new HostNotSpecifiedException();
@@ -292,13 +293,13 @@ namespace Hosts
 							Line.Hidden = false;
 							Console.WriteLine("[SHOWN] {0} {1}", Line.IP.ToString(), Line.Aliases.ToString());
 						}
-						break;
+					break;
 
 					default:
 						Console.WriteLine("[ERROR] Unknown command");
 						Console.WriteLine();
 						Help(interactive);
-						return;
+					return;
 				}
 				File.Copy(HostsFile, RollbackHostsFile, true);
 				Hosts.Save();

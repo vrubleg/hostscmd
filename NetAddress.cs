@@ -25,12 +25,12 @@ namespace Hosts
 						IPv4 = true;
 						IPv6 = false;
 						IP = IPAddress.Parse(ip).ToString();
-						break;
+					break;
 					case AddressFamily.InterNetworkV6:
 						IPv4 = false;
 						IPv6 = true;
 						IP = ip.ToLower(); // TODO: Normalize IPv6 address to compact format
-						break;
+					break;
 					default: throw new Exception();
 				}
 			}
