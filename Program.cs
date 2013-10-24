@@ -229,9 +229,13 @@ namespace Hosts
 					break;
 
 					case "set":
+						RunUpdateMode(true);
+					break;
+
 					case "change":
 					case "update":
-						RunUpdateMode();
+					case "upd":
+						RunUpdateMode(false);
 					break;
 
 					case "rem":
@@ -348,87 +352,152 @@ namespace Hosts
 			View(mask, visibleOnly, enabledOnly);
 		}
 
+		static void AddHostsItem(NetAddress address, HostAliases aliases, string comment)
+		{
+			// Remove duplicates
+			foreach (HostName host in aliases)
+			{
+				var lines = Hosts.FindAll(item => item.Valid && item.IP.Type == address.Type && item.Aliases.Contains(host));
+				foreach (var line in lines)
+				{
+					if (line.Aliases.Count == 1)
+					{
+						Hosts.Remove(line);
+						Console.WriteLine("[REMOVED] {0} {1}", line.IP.ToString(), line.Aliases.ToString());
+					}
+					else
+					{
+						line.Aliases.Remove(host);
+						Console.WriteLine("[UPDATED] {0} {1}", line.IP.ToString(), line.Aliases.ToString());
+					}
+				}
+			}
+
+			// New host
+			var new_item = new HostsItem(address, aliases, comment.Trim());
+			Hosts.Add(new_item);
+			Console.WriteLine("[ADDED] {0} {1}", new_item.IP.ToString(), new_item.Aliases.ToString());
+		}
+
 		static void RunAddMode()
 		{
 			if (ArgsQueue.Count == 0) throw new HostNotSpecifiedException();
 			HostAliases aliases = new HostAliases();
-			NetAddress address = new NetAddress("127.0.0.1");
+			NetAddress address_ipv4 = null;
+			NetAddress address_ipv6 = null;
 			string comment = "";
-			bool inComment = false;
+			bool in_comment = false;
 
 			while (ArgsQueue.Count > 0)
 			{
 				string arg = ArgsQueue.Dequeue();
-				if (inComment)
+				if (in_comment)
 				{
 					comment += arg + " ";
 					continue;
 				}
 				if (arg.Length > 0 && arg[0] == '#')
 				{
-					inComment = true;
+					in_comment = true;
 					comment = (arg.Length > 1) ? (arg.Substring(1) + " ") : "";
 					continue;
 				}
 				arg = arg.ToLower();
-				NetAddress TestAddress = NetAddress.TryCreate(arg);
-				if (TestAddress != null)
+				var address_test = NetAddress.TryCreate(arg);
+				if (address_test != null)
 				{
-					address = TestAddress;
+					if (address_test.Type == NetAddressType.IPv4)
+						address_ipv4 = address_test;
+					else
+						address_ipv6 = address_test;
 					continue;
 				}
-				HostName TestHostName = HostName.TryCreate(arg);
-				if (TestHostName != null)
+				var hostname_test = HostName.TryCreate(arg);
+				if (hostname_test != null)
 				{
-					aliases.Add(TestHostName);
+					aliases.Add(hostname_test);
 					continue;
 				}
 				throw new Exception(String.Format("Unknown argument '{0}'", arg));
 			}
 
-			HostsItem line = new HostsItem(address, aliases, comment.Trim());
-			Hosts.Add(line);
-			Console.WriteLine("[ADDED] {0} {1}", line.IP.ToString(), line.Aliases.ToString());
+			if (address_ipv4 == null && address_ipv6 == null)
+			{
+				address_ipv4 = new NetAddress("127.0.0.1");
+			}
+
+			if (address_ipv4 != null)
+			{
+				AddHostsItem(address_ipv4, aliases, comment.Trim());
+			}
+
+			if (address_ipv6 != null)
+			{
+				AddHostsItem(address_ipv6, aliases, comment.Trim());
+			}
 		}
 
-		static void RunUpdateMode()
+		static void RunUpdateMode(bool autoadd = false)
 		{
 			if (ArgsQueue.Count == 0) throw new HostNotSpecifiedException();
-			string mask = ArgsQueue.Dequeue();
+			string mask = ArgsQueue.Peek();
 			List<HostsItem> lines = Hosts.GetMatched(mask);
-			if (lines.Count == 0) throw new HostNotFoundException(mask);
-			NetAddress address = null;
+			if (lines.Count == 0)
+			{
+				if (autoadd && mask.IndexOf('*') == -1)
+				{
+					RunAddMode();
+					return;
+				}
+				else throw new HostNotFoundException(mask);
+			}
+			ArgsQueue.Dequeue();
+
+			NetAddress address_ipv4 = null;
+			NetAddress address_ipv6 = null;
 			string comment = null;
-			bool inComment = false;
+			bool in_comment = false;
 
 			while (ArgsQueue.Count > 0)
 			{
 				string arg = ArgsQueue.Dequeue();
-				if (inComment)
+				if (in_comment)
 				{
 					comment += arg + " ";
 					continue;
 				}
 				if (arg.Length > 0 && arg[0] == '#')
 				{
-					inComment = true;
+					in_comment = true;
 					comment = (arg.Length > 1) ? (arg.Substring(1) + " ") : "";
 					continue;
 				}
 				arg = arg.ToLower();
-				NetAddress TestAddress = NetAddress.TryCreate(arg);
-				if (TestAddress != null)
+				NetAddress address_test = NetAddress.TryCreate(arg);
+				if (address_test != null)
 				{
-					address = TestAddress;
+					if (address_test.Type == NetAddressType.IPv4)
+						address_ipv4 = address_test;
+					else
+						address_ipv6 = address_test;
 					continue;
 				}
 			}
 
 			foreach (HostsItem line in lines)
 			{
-				if (address != null) line.IP = address;
-				if (comment != null) line.Comment = comment.Trim();
-				Console.WriteLine("[UPDATED] {0} {1}", line.IP.ToString(), line.Aliases.ToString());
+				if (address_ipv4 != null && line.IP.Type == NetAddressType.IPv4)
+				{
+					line.IP = address_ipv4;
+					if (comment != null) line.Comment = comment.Trim();
+					Console.WriteLine("[UPDATED] {0} {1}", line.IP.ToString(), line.Aliases.ToString());
+				}
+				if (address_ipv6 != null && line.IP.Type == NetAddressType.IPv6)
+				{
+					line.IP = address_ipv6;
+					if (comment != null) line.Comment = comment.Trim();
+					Console.WriteLine("[UPDATED] {0} {1}", line.IP.ToString(), line.Aliases.ToString());
+				}
 			}
 		}
 

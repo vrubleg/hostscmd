@@ -7,12 +7,13 @@ using System.Net.Sockets;
 
 namespace Hosts
 {
+	public enum NetAddressType { None, IPv4, IPv6 };
+
 	public class NetAddress
 	{
 		private string IP;
 
-		public bool IPv4 { get; protected set; }
-		public bool IPv6 { get; protected set; }
+		public NetAddressType Type { get; protected set; }
 
 		/// <summary>
 		/// Normalize IPv6 address to compact format
@@ -125,14 +126,12 @@ namespace Hosts
 				{
 
 					case AddressFamily.InterNetwork:
-						IPv4 = true;
-						IPv6 = false;
+						Type = NetAddressType.IPv4;
 						IP = parsed.ToString();
 					break;
 
 					case AddressFamily.InterNetworkV6:
-						IPv4 = false;
-						IPv6 = true;
+						Type = NetAddressType.IPv6;
 						IP = NormalizeIPv6(ip);
 					break;
 

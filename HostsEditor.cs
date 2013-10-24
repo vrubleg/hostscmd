@@ -91,9 +91,9 @@ namespace Hosts
 			return this.RemoveAll(item => item.Valid && item.Aliases.Contains(host));
 		}
 
-		public int RemoveLinesWithHost(HostName host, bool IPv6)
+		public int RemoveLinesWithHost(HostName host, NetAddressType type)
 		{
-			return this.RemoveAll(item => item.Valid && item.IP.IPv6 == IPv6 && item.Aliases.Contains(host));
+			return this.RemoveAll(item => item.Valid && (type == NetAddressType.None || item.IP.Type == type) && item.Aliases.Contains(host));
 		}
 
 		public int RemoveLinesWithIp(NetAddress ip)
