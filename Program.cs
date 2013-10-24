@@ -386,7 +386,7 @@ namespace Hosts
 				throw new Exception(String.Format("Unknown argument '{0}'", arg));
 			}
 
-			HostsItem line = new HostsItem(address, aliases, comment);
+			HostsItem line = new HostsItem(address, aliases, comment.Trim());
 			Hosts.Add(line);
 			Console.WriteLine("[ADDED] {0} {1}", line.IP.ToString(), line.Aliases.ToString());
 		}
@@ -427,7 +427,7 @@ namespace Hosts
 			foreach (HostsItem line in lines)
 			{
 				if (address != null) line.IP = address;
-				if (comment != null) line.Comment = comment;
+				if (comment != null) line.Comment = comment.Trim();
 				Console.WriteLine("[UPDATED] {0} {1}", line.IP.ToString(), line.Aliases.ToString());
 			}
 		}
@@ -450,7 +450,7 @@ namespace Hosts
 					while (true)
 					{
 						Console.Write("hosts> ");
-						var command = Console.ReadLine().Replace("\0", "").Trim();
+						var command = (Console.ReadLine() ?? "").Replace("\0", "").Trim();
 						if (command == "") continue;
 						if (command.StartsWith("hosts "))
 						{

@@ -14,23 +14,128 @@ namespace Hosts
 		public bool IPv4 { get; protected set; }
 		public bool IPv6 { get; protected set; }
 
+		/// <summary>
+		/// Normalize IPv6 address to compact format
+		/// </summary>
+		/// <param name="ip">IPv6 string</param>
+		/// <returns>Normalized IPv6 string</returns>
+		protected string NormalizeIPv6(string ip)
+		{
+			var hex = ip.Split(':');
+			var dec = new uint[8];
+			var gap = false;
+
+			// Parse "head"
+			for (var i = 0; i < hex.Length; i++)
+			{
+				if (String.IsNullOrEmpty(hex[i]))
+				{
+					gap = true;
+					break;
+				}
+				dec[i] = Convert.ToUInt32(hex[i], 16);
+			}
+
+			// Parse "tail"
+			if (gap) for (var i = 0; i < hex.Length; i++)
+			{
+				if (String.IsNullOrEmpty(hex[hex.Length - i - 1]))
+				{
+					break;
+				}
+				dec[dec.Length - i - 1] = Convert.ToUInt32(hex[hex.Length - i - 1], 16);
+			}
+
+
+			// Find longest zeroes part
+			var max_offset = -1;
+			var max_length = 0;
+			var offset = -1;
+			var length = 0;
+
+			for (var i = 0; i < dec.Length; i++)
+			{
+				if (dec[i] == 0)
+				{
+					if (offset == -1)
+					{
+						offset = i;
+						length = 1;
+					}
+					else
+					{
+						length++;
+					}
+				}
+				else if (offset > -1)
+				{
+					if (length > max_length)
+					{
+						max_offset = offset;
+						max_length = length;
+					}
+					offset = -1;
+					length = 0;
+				}
+			}
+			if (length > max_length)
+			{
+				max_offset = offset;
+				max_length = length;
+			}
+
+			// Ignore one zero
+			if (max_length == 1)
+			{
+				max_length = 0;
+				max_offset = -1;
+			}
+
+			// Format normalized IPv6 address
+			ip = "";
+			for (int i = 0; i < dec.Length; i++)
+			{
+				if (i >= max_offset && i < (max_offset + max_length))
+				{
+					if (i == max_offset)
+					{
+						ip += "::";
+					}
+					continue;
+				}
+
+				if (ip.Length > 0 && !ip.EndsWith(":"))
+				{
+					ip += ":";
+				}
+
+				ip += dec[i].ToString("x");
+			}
+
+			return ip.ToLower();
+		}
+
 		public NetAddress(string ip)
 		{
 			if (ip == null) throw new ArgumentNullException();
 			try
 			{
-				switch (IPAddress.Parse(ip).AddressFamily)
+				var parsed = IPAddress.Parse(ip);
+				switch (parsed.AddressFamily)
 				{
+
 					case AddressFamily.InterNetwork:
 						IPv4 = true;
 						IPv6 = false;
-						IP = IPAddress.Parse(ip).ToString();
+						IP = parsed.ToString();
 					break;
+
 					case AddressFamily.InterNetworkV6:
 						IPv4 = false;
 						IPv6 = true;
-						IP = ip.ToLower(); // TODO: Normalize IPv6 address to compact format
+						IP = NormalizeIPv6(ip);
 					break;
+
 					default: throw new Exception();
 				}
 			}
