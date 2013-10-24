@@ -209,6 +209,7 @@ namespace Hosts
 					case "list":
 					case "view":
 					case "select":
+					case "ls":
 						RunListMode(interactive);
 					return;
 
@@ -354,6 +355,8 @@ namespace Hosts
 
 		static void AddHostsItem(NetAddress address, HostAliases aliases, string comment)
 		{
+			if (aliases.Count == 0) throw new HostNotSpecifiedException();
+
 			// Remove duplicates
 			foreach (HostName host in aliases)
 			{
@@ -374,7 +377,7 @@ namespace Hosts
 			}
 
 			// New host
-			var new_item = new HostsItem(address, aliases, comment.Trim());
+			var new_item = new HostsItem(address, aliases, comment == null ? "" : comment.Trim());
 			Hosts.Add(new_item);
 			Console.WriteLine("[ADDED] {0} {1}", new_item.IP.ToString(), new_item.Aliases.ToString());
 		}
@@ -440,18 +443,12 @@ namespace Hosts
 		static void RunUpdateMode(bool autoadd = false)
 		{
 			if (ArgsQueue.Count == 0) throw new HostNotSpecifiedException();
-			string mask = ArgsQueue.Peek();
+			string mask = ArgsQueue.Dequeue();
 			List<HostsItem> lines = Hosts.GetMatched(mask);
-			if (lines.Count == 0)
+			if (lines.Count == 0 && (!autoadd || mask.IndexOf('*') != -1))
 			{
-				if (autoadd && mask.IndexOf('*') == -1)
-				{
-					RunAddMode();
-					return;
-				}
-				else throw new HostNotFoundException(mask);
+				throw new HostNotFoundException(mask);
 			}
-			ArgsQueue.Dequeue();
 
 			NetAddress address_ipv4 = null;
 			NetAddress address_ipv6 = null;
@@ -484,20 +481,42 @@ namespace Hosts
 				}
 			}
 
+			var ipv4_added = false;
+			var ipv6_added = false;
+
 			foreach (HostsItem line in lines)
 			{
+				if (address_ipv4 == null && address_ipv6 == null && comment != null)
+				{
+					// Update comments only
+					line.Comment = comment;
+					Console.WriteLine("[UPDATED] {0} {1}", line.IP.ToString(), line.Aliases.ToString());
+					continue;
+				}
 				if (address_ipv4 != null && line.IP.Type == NetAddressType.IPv4)
 				{
+					ipv4_added = true;
 					line.IP = address_ipv4;
-					if (comment != null) line.Comment = comment.Trim();
+					if (comment != null) line.Comment = comment;
 					Console.WriteLine("[UPDATED] {0} {1}", line.IP.ToString(), line.Aliases.ToString());
 				}
 				if (address_ipv6 != null && line.IP.Type == NetAddressType.IPv6)
 				{
+					ipv6_added = true;
 					line.IP = address_ipv6;
-					if (comment != null) line.Comment = comment.Trim();
+					if (comment != null) line.Comment = comment;
 					Console.WriteLine("[UPDATED] {0} {1}", line.IP.ToString(), line.Aliases.ToString());
 				}
+			}
+
+			if (address_ipv4 != null && !ipv4_added && autoadd)
+			{
+				AddHostsItem(address_ipv4, new HostAliases(mask), comment);
+			}
+
+			if (address_ipv6 != null && !ipv6_added && autoadd)
+			{
+				AddHostsItem(address_ipv6, new HostAliases(mask), comment);
 			}
 		}
 

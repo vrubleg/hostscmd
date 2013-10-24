@@ -28,7 +28,7 @@ namespace Hosts
 			Enabled = true;
 			IP = new NetAddress(ip);
 			Aliases = new HostAliases(hosts);
-			Comment = comment;
+			Comment = comment ?? "";
 			Valid = true;
 		}
 
@@ -37,7 +37,7 @@ namespace Hosts
 			Enabled = true;
 			IP = new NetAddress(ip);
 			Aliases = new HostAliases(hosts);
-			Comment = comment;
+			Comment = comment ?? "";
 			Valid = true;
 		}
 
@@ -46,7 +46,7 @@ namespace Hosts
 			Enabled = true;
 			IP = ip;
 			Aliases = new HostAliases(host);
-			Comment = comment;
+			Comment = comment ?? "";
 			Valid = true;
 		}
 
@@ -55,7 +55,7 @@ namespace Hosts
 			Enabled = true;
 			IP = ip;
 			Aliases = hosts;
-			Comment = comment;
+			Comment = comment ?? "";
 			Valid = true;
 		}
 
