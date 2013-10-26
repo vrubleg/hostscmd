@@ -47,16 +47,68 @@ namespace Hosts
 			return (attributes.Length == 0) ? default(T) : (T)attributes[0];
 		}
 
-		static string GetCopyright()
-		{
-			var CopyrightAttribute = GetAssemblyAttribute<AssemblyCopyrightAttribute>();
-			return (CopyrightAttribute == null) ? String.Empty : CopyrightAttribute.Copyright;
-		}
-
 		static string GetTitle()
 		{
-			var TitleAttribute = GetAssemblyAttribute<AssemblyTitleAttribute>();
-			return (TitleAttribute == null) ? String.Empty : TitleAttribute.Title;
+			var attr = GetAssemblyAttribute<AssemblyTitleAttribute>();
+			if (attr == null) return String.Empty;
+			var title = attr.Title;
+
+			var version = GetVersion();
+			if (version != null)
+			{
+				title += " v" + version;
+			}
+
+			var date = GetBuildDate();
+			if (date != DateTime.MinValue)
+			{
+				title += date.ToString(" [dd.MM.yyyy]");
+			}
+
+			return title;
+		}
+
+		static string GetVersion()
+		{
+			var attr = GetAssemblyAttribute<AssemblyFileVersionAttribute>();
+			if (attr == null) return null;
+
+			var parts = new List<string>(attr.Version.TrimEnd('0', '.').Split('.'));
+			if (parts.Count == 0) return null;
+			while (parts.Count < 3)
+			{
+				parts.Add("0");
+			}
+
+			return String.Join(".", parts.ToArray());
+		}
+
+		static DateTime GetBuildDate()
+		{
+			try
+			{
+				// Read it from the PE header
+				var buffer = File.ReadAllBytes(Assembly.GetExecutingAssembly().Location);
+				var pe = BitConverter.ToInt32(buffer, 0x3C);
+				var time = BitConverter.ToInt32(buffer, pe + 8);
+				return (new DateTime(1970, 1, 1, 0, 0, 0, 0)).AddSeconds(time);
+			}
+			catch
+			{
+				return DateTime.MinValue;
+			}
+		}
+
+		static string GetCopyright()
+		{
+			var attr = GetAssemblyAttribute<AssemblyCopyrightAttribute>();
+			return (attr == null) ? String.Empty : attr.Copyright;
+		}
+
+		static string GetDescription()
+		{
+			var attr = GetAssemblyAttribute<AssemblyDescriptionAttribute>();
+			return (attr == null) ? String.Empty : attr.Description;
 		}
 
 		static void Help(bool interactive)
@@ -69,8 +121,8 @@ namespace Hosts
 				Console.WriteLine("Usage:");
 				Console.WriteLine("  hosts - run hosts command interpreter");
 				Console.WriteLine("  hosts <command> <params> - execute hosts command");
-				Console.WriteLine();
 			}
+			Console.WriteLine();
 			Console.WriteLine("Commands:");
 			Console.WriteLine("  add  <host> <aliases> <addr> # <comment>   - add new host");
 			Console.WriteLine("  set  <host|mask> <addr> # <comment>        - set ip and comment for host");
@@ -95,6 +147,8 @@ namespace Hosts
 			{
 				Console.WriteLine("  exit       - exit from command interpreter");
 			}
+			Console.WriteLine();
+			Console.WriteLine("Details:\n  " + GetDescription());
 		}
 
 		static HostsEditor Hosts;
@@ -302,7 +356,6 @@ namespace Hosts
 
 					default:
 						Console.WriteLine("[ERROR] Unknown command");
-						Console.WriteLine();
 						Help(interactive);
 					return;
 				}
