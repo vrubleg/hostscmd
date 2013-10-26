@@ -17,6 +17,17 @@ namespace Hosts
 			Encoding = new UTF8Encoding(false);
 		}
 
+		public HostsEditor(HostsEditor source) : base(source.Select(item => item.Clone()).ToArray())
+		{
+			this.FileName = source.FileName;
+			this.Encoding = source.Encoding;
+		}
+		
+		public HostsEditor Clone()
+		{
+			return new HostsEditor(this);
+		}
+
 		private bool IsUTF8(byte[] data)
 		{
 			try

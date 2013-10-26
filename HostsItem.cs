@@ -8,6 +8,9 @@ namespace Hosts
 {
 	public class HostsItem
 	{
+		protected string SourceString;
+		protected ulong SourceHash;
+
 		public bool Valid { get; protected set; }
 		public bool Enabled { get; set; }
 		public bool Hidden { get; set; }
@@ -16,6 +19,19 @@ namespace Hosts
 		public string Comment { get; set; }
 		public bool ResetFormat { get; set; }
 		public bool Deleted { get { return Valid && (Aliases == null || Aliases.Count == 0); } }
+
+		public string RawString
+		{
+			get
+			{
+				bool format = ResetFormat || String.IsNullOrEmpty(SourceString) || SourceHash != HalfMD5.ComputeHash(ToString());
+				return format ? ToString(false) : SourceString;
+			}
+			set
+			{
+				Parse(value);
+			}
+		}
 
 		public HostsItem(string text, bool resetFormat = false)
 		{
@@ -59,30 +75,33 @@ namespace Hosts
 			Valid = true;
 		}
 
+		public HostsItem(HostsItem source)
+		{
+			this.Valid = source.Valid;
+			this.Enabled = source.Enabled;
+			this.Hidden = source.Hidden;
+			this.IP = source.IP;
+			this.Aliases = source.Aliases == null ? null : new HostAliases(source.Aliases);
+			this.Comment = source.Comment;
+			this.ResetFormat = source.ResetFormat;
+			this.SourceString = source.SourceString;
+			this.SourceHash = source.SourceHash;
+		}
+
+		public HostsItem Clone()
+		{
+			return new HostsItem(this);
+		}
+
 		private static Regex HostRowPattern = new Regex(@"^#?\s*"
 			+ @"(?<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|[0-9a-f:]+)\s+"
 			+ @"(?<hosts>(([a-z0-9][-_a-z0-9]*\.?)+\s*)+)"
 			+ @"(?:#\s*(?<comment>.*?)\s*)?$",
 			RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled);
 
-		private string ParsedString;
-		protected ulong ParsedHash;
-		public string RawString 
-		{
-			get 
-			{
-				bool format = ResetFormat || String.IsNullOrEmpty(ParsedString) || ParsedHash != HalfMD5.ComputeHash(ToString());
-				return format ? ToString(false) : ParsedString;
-			}
-			set	
-			{
-				Parse(value);
-			}
-		}
-
 		public bool Parse(string value)
 		{
-			ParsedString = value;
+			SourceString = value;
 			try
 			{
 				var match = HostRowPattern.Match(value);
@@ -108,7 +127,7 @@ namespace Hosts
 				Comment = null;
 				Valid = false;
 			}
-			ParsedHash = HalfMD5.ComputeHash(ToString());
+			SourceHash = HalfMD5.ComputeHash(ToString());
 			return Valid;
 		}
 
@@ -129,7 +148,7 @@ namespace Hosts
 			}
 			else
 			{
-				string result = ParsedString.Trim();
+				string result = SourceString.Trim();
 				if (result.Length > 0 && result[0] != '#') result = "# " + result;
 				return result;
 			}
