@@ -30,3 +30,4 @@ http://stackoverflow.com/questions/13627767/open-file-in-default-editor-from-bas
  - Поскольку LINQ не работает с ObservableCollection, клонировать HostsEditor перед изменениями и делать diff между оригинальной и изменённой версией, в HostsItem можно добавить поле «номер строки в исходном файле» для точного определения изменившихся строк
  - Метод, сообщающий, изменится ли файл при сохранении (IsChanged?)
  - Добавить поддержку регулярок в паттерны (в формате /.*\.local/)
+ - Hi, I'm just discover your hosts commander, very nice! It would be nice if your app can work with lmhosts instead hosts, is it possible to add as option ? add x.x.x.x computer #PRE  (very useful for vpn , with just hosts, there is slow issue) + "nbtstat -R" after updating lmhosts. What do you think ?

@@ -59,6 +59,10 @@ namespace Hosts
 				title += " v" + version;
 			}
 
+			#if DEBUG
+			title += " DEBUG";
+			#endif
+
 			var date = GetBuildDate();
 			if (date != DateTime.MinValue)
 			{
@@ -372,7 +376,11 @@ namespace Hosts
 			}
 			catch (Exception e)
 			{
+				#if DEBUG
+				Console.WriteLine("[ERROR] " + e.ToString());
+				#else
 				Console.WriteLine("[ERROR] " + e.Message);
+				#endif
 			}
 		}
 
@@ -606,7 +614,12 @@ namespace Hosts
 			}
 			catch (Exception e)
 			{
+				#if DEBUG
+				Console.WriteLine("[ERROR] " + e.ToString());
+				#else
 				Console.WriteLine("[ERROR] " + e.Message);
+				#endif
+				Console.ReadKey();
 			}
 		}
 	}
