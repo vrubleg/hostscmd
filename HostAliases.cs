@@ -23,7 +23,7 @@ namespace Hosts
 		public new int Add(HostName host)
 		{
 			if (Contains(host)) return 0;
-			RemoveAll(item => String.IsNullOrEmpty(item));
+			RemoveAll(item => String.IsNullOrWhiteSpace(item));
 			base.Add(host);
 			return 1;
 		}

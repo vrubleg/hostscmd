@@ -141,9 +141,9 @@ namespace Hosts
 			if (Valid)
 			{
 				string result = String.Format("{0,-18} {1,-31} ", (Enabled ? "" : "# ") + IP.ToString(), Aliases.ToString(idn));
-				if (!String.IsNullOrEmpty(Comment) || Hidden) result += "#";
+				if (!String.IsNullOrWhiteSpace(Comment) || Hidden) result += "#";
 				if (Hidden) result += "!"; else result += " ";
-				if (!String.IsNullOrEmpty(Comment)) result += Comment;
+				if (!String.IsNullOrWhiteSpace(Comment)) result += Comment;
 				return result.Trim();
 			}
 			else
