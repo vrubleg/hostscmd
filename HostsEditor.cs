@@ -49,6 +49,12 @@ namespace Hosts
 		public void Load(string fileName)
 		{
 			Clear();
+
+			if (!File.Exists(fileName))
+			{
+				return;
+			}
+
 			byte[] HostsData = File.ReadAllBytes(fileName);
 			Encoding = (IsUTF8(HostsData)) ? new UTF8Encoding(false) : Encoding.Default;
 			var HostsReader = new StreamReader(new MemoryStream(HostsData), Encoding);
