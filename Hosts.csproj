@@ -87,7 +87,10 @@
     <Compile Include="WildcardPattern.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="ReadMe.txt">
+    <Content Include="ReadMeEn.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ReadMeRu.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="ToDo.txt" />

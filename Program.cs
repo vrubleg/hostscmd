@@ -21,9 +21,8 @@ namespace Hosts
 	class Program
 	{
 		static bool IsUnix { get { return (Environment.OSVersion.Platform == PlatformID.Unix) || (Environment.OSVersion.Platform == PlatformID.MacOSX); } }
-
-		static string HostsFile;
 		static bool CanWrite;
+		static string HostsFile;
 
 		static string GetHostsFileName()
 		{
@@ -70,7 +69,8 @@ namespace Hosts
 			var date = GetBuildDate();
 			if (date != DateTime.MinValue)
 			{
-				title += date.ToString(" [dd.MM.yyyy]");
+				// For some reason, ToString outputs "/" as "-", so we replace it
+				title += date.ToString(" [yyyy/MM/dd]").Replace('-', '/');
 			}
 
 			return title;
@@ -205,7 +205,7 @@ namespace Hosts
 					case "apply":
 						if (!CanWrite) throw new NoWritePermissionException();
 						var ApplyHostsFile = ArgsQueue.Dequeue();
-						if (!File.Exists(ApplyHostsFile)) throw new Exception("Apply file is not exists");
+						if (!File.Exists(ApplyHostsFile)) throw new Exception("Applied file does not exist");
 						File.Copy(HostsFile, RollbackFile, true);
 						File.Copy(ApplyHostsFile, HostsFile, true);
 						Console.WriteLine("[OK] New hosts file applied successfully");
@@ -221,7 +221,7 @@ namespace Hosts
 					case "restore":
 						if (!CanWrite) throw new NoWritePermissionException();
 						if (ArgsQueue.Count > 0) BackupFile = HostsFile + "." + ArgsQueue.Dequeue().ToLower();
-						if (!File.Exists(BackupFile)) throw new Exception("Backup file is not exists");
+						if (!File.Exists(BackupFile)) throw new Exception("Backup file does not exist");
 						File.Copy(HostsFile, RollbackFile, true);
 						File.Copy(BackupFile, HostsFile, true);
 						Console.WriteLine("[OK] Hosts file restored successfully");
@@ -229,7 +229,7 @@ namespace Hosts
 
 					case "rollback":
 						if (!CanWrite) throw new NoWritePermissionException();
-						if (!File.Exists(RollbackFile)) throw new Exception("Rollback file is not exists");
+						if (!File.Exists(RollbackFile)) throw new Exception("Rollback file does not exist");
 						if (File.Exists(HostsFile)) File.Delete(HostsFile);
 						File.Move(RollbackFile, HostsFile);
 						Console.WriteLine("[OK] Hosts file rolled back successfully");
@@ -639,7 +639,7 @@ namespace Hosts
 				{
 					Console.WriteLine(GetTitle());
 					Console.WriteLine(GetCopyright());
-					Console.WriteLine("Hosts file: " + GetHostsFileName().ToLower());
+					Console.WriteLine("Hosts file: " + HostsFile.ToLower());
 					Console.WriteLine();
 					while (true)
 					{

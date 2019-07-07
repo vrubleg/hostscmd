@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("Hosts Commander")]
-[assembly: AssemblyDescription("http://vegalogic.com/go/hostscmd/")]
+[assembly: AssemblyDescription("Command line hosts file editor")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Vegalogic Software")]
 [assembly: AssemblyProduct("Hosts Commander")]
-[assembly: AssemblyCopyright("(c) 2010-2013 Evgeny Vrublevsky <veg@tut.by>")]
+[assembly: AssemblyCopyright("(C) 2010-2019 Evgeny Vrublevsky <me@veg.by>")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -32,5 +32,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.6.0.0")]
-[assembly: AssemblyFileVersion("1.6.0.0")]
+[assembly: AssemblyVersion("1.6.1.0")]
+[assembly: AssemblyFileVersion("1.6.1.0")]
