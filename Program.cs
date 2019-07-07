@@ -69,8 +69,9 @@ namespace Hosts
 			var date = GetBuildDate();
 			if (date != DateTime.MinValue)
 			{
-				// For some reason, ToString outputs "/" as "-", so we replace it
-				title += date.ToString(" [yyyy/MM/dd]").Replace('-', '/');
+				// For some reason, it replaces "yyyy/MM/dd" by a locale specific date format
+				// So, we use "-" as a delimiter and replace it to "/"
+				title += date.ToString(" [yyyy-MM-dd]").Replace('-', '/');
 			}
 
 			return title;

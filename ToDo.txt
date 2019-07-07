@@ -40,3 +40,4 @@ http://stackoverflow.com/questions/13627767/open-file-in-default-editor-from-bas
  - Либо же при сохранении если не получается сохранить куда планировалось сохраняем в Temp/Vegalogic/Hosts/ и запускаем сами себя с повышенными привилегиями, чтобы из TEMP перенести файл куда нужно (команда apply)
  - IsPortable, UserDirectory (etc, user, local, roaming, mydocs, current) — свойства в главном классе Program
  - Запускать с повышенными правами отдельный процесс и общаться через Named Pipes — как вариант (позволит получать результат и т.д.)
+ - можно ещё задействовать Job Objects чтобы оно само дохло в случае закрытия предка (придётся задействовать JobObjectWrapper, так как родного для .NET такого API нет)
