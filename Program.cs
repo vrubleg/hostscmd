@@ -612,11 +612,8 @@ namespace Hosts
 				}
 
 				// Check if hosts file is writeable
-				var CheckFile = HostsFile + ".check";
-				File.Copy(HostsFile, CheckFile, true);
-				File.AppendAllText(HostsFile, "\r\n127.0.0.1 checkhost.local");
-				File.Copy(CheckFile, HostsFile, true);
-				File.Delete(CheckFile);
+				var DataCopy = File.ReadAllBytes(HostsFile);
+				File.WriteAllBytes(HostsFile, DataCopy);
 
 				CanWrite = true;
 			}

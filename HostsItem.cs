@@ -93,29 +93,42 @@ namespace Hosts
 			return new HostsItem(this);
 		}
 
-		private static Regex HostRowPattern = new Regex(@"^#?\s*"
-			+ @"(?<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|[0-9a-f:]+)\s+"
-			+ @"(?<hosts>(([a-z0-9][-_a-z0-9]*\.?)+\s*)+)"
-			+ @"(?:#\s*(?<comment>.*?)\s*)?$",
-			RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled);
-
 		public bool Parse(string value)
 		{
 			SourceString = value;
 			try
 			{
-				var match = HostRowPattern.Match(value);
-				if (!match.Success) throw new FormatException();
+				value = value.Trim();
+				if (String.IsNullOrEmpty(value)) { throw new FormatException(); }
+				if (value.IndexOfAny(new char[] {'\r', '\n'}) != -1) { throw new FormatException(); }
+
+				// Check if enabled.
 				Enabled = value[0] != '#';
-				IP = new NetAddress(match.Groups["ip"].Value);
-				Aliases = new HostAliases(match.Groups["hosts"].Value);
-				Comment = match.Groups["comment"].Value;
+				if (!Enabled) { value = value.Substring(1).TrimStart(); }
+				if (String.IsNullOrEmpty(value)) { throw new FormatException(); }
+
+				// Parse comment part.
 				Hidden = false;
-				if (!String.IsNullOrEmpty(Comment))
+				Comment = null;
+				var comment_pos = value.IndexOf('#');
+				if (comment_pos != -1)
 				{
-					Hidden = Comment[0] == '!';
-					if (Hidden) Comment = Comment.Substring(1).Trim();
+					Comment = value.Substring(comment_pos + 1).Trim();
+					if (!String.IsNullOrEmpty(Comment))
+					{
+						Hidden = Comment[0] == '!';
+						if (Hidden) Comment = Comment.Substring(1).Trim();
+					}
+					value = value.Substring(0, comment_pos).TrimEnd();
+					if (String.IsNullOrEmpty(value)) { throw new FormatException(); }
 				}
+
+				// Parse IP and hosts.
+				var parts = value.Split(new char[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+				if (parts.Length < 2) { throw new FormatException(); }
+
+				IP = new NetAddress(parts[0]);
+				Aliases = new HostAliases(parts.Skip(1).ToArray());
 				Valid = true;
 			}
 			catch

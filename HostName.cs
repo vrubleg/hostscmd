@@ -20,6 +20,7 @@ namespace Hosts
 			try
 			{
 				host = host.ToLower();
+				if (Uri.CheckHostName(host) != UriHostNameType.Dns) { throw new Exception(); }
 				if (host.StartsWith("xn--") || host.Contains(".xn--"))
 				{
 					Unicode = IdnMapping.GetUnicode(host);
