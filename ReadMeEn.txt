@@ -30,12 +30,12 @@ hosts
  - Enter other commands without "hosts" prefix in this mode
  - Use "exit" or "quit" to exit from this CLI
 
-hosts view [all] <mask>
+hosts list [--all] <mask>
  - Displays enabled and not hidden hostnames by default
- - With "all" flag, it displays disabled and hidden hosts also
- - Aliases: list, select, ls
- - Example: view vk
- - Example: view all *.local
+ - With "--all" flag, it displays disabled and hidden hosts also
+ - Aliases: view, select, ls
+ - Example: list vk
+ - Example: list all *.local
 
 hosts add <host> <aliases> <addr> # <comment>
  - Adds a new hostname, <addr> is 127.0.0.1 by default
@@ -115,6 +115,11 @@ hosts open
 ------------------------------------------------------------------------------------------------------------------------
   Changelog
 ------------------------------------------------------------------------------------------------------------------------
+
+v1.6.2 [2020/XX/XX]
+ - Fixed an error which may cause a freeze on a malformed hosts file..
+ - The "list" command uses "--all" as an argument instead of "all".
+ - More understandable messages from the "add" command when you are trying to add already existing hosts.
 
 v1.6.1 [2019/07/07]
  - Program is built for .NET Framework 4.0 (it is preinstalled on Windows 8 and 10)

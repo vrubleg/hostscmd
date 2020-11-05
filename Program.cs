@@ -150,12 +150,12 @@ namespace Hosts
 			Console.WriteLine("Commands:");
 			Console.WriteLine("  add  <host> <aliases> <addr> # <comment>   - add new host");
 			Console.WriteLine("  set  <host|mask> <addr> # <comment>        - set ip and comment for host");
-			Console.WriteLine("  rem  <host|mask>   - remove host");
-			Console.WriteLine("  on   <host|mask>   - enable host");
-			Console.WriteLine("  off  <host|mask>   - disable host");
-			Console.WriteLine("  view [all] <mask>  - display enabled and visible, or all hosts");
-			Console.WriteLine("  hide <host|mask>   - hide host from 'hosts view'");
-			Console.WriteLine("  show <host|mask>   - show host in 'hosts view'");
+			Console.WriteLine("  rem  <host|mask>       - remove host");
+			Console.WriteLine("  on   <host|mask>       - enable host");
+			Console.WriteLine("  off  <host|mask>       - disable host");
+			Console.WriteLine("  list [--all] <mask>    - display enabled and visible, or all hosts");
+			Console.WriteLine("  hide <host|mask>       - hide host from 'hosts list'");
+			Console.WriteLine("  show <host|mask>       - show host in 'hosts list'");
 			Console.WriteLine("  print      - display raw hosts file");
 			Console.WriteLine("  format     - format host rows");
 			Console.WriteLine("  clean      - format and remove all comments");
@@ -419,17 +419,17 @@ namespace Hosts
 				Console.WriteLine();
 			}
 
-			bool? visibleOnly = true;
-			bool? enabledOnly = true;
+			bool? visible_only = true;
+			bool? enabled_only = true;
 			string mask = "*";
 
 			if (ArgsQueue.Count > 0)
 			{
 				string arg = ArgsQueue.Dequeue().ToLower();
-				if (arg == "all")
+				if (arg == "--all")
 				{
-					visibleOnly = null;
-					enabledOnly = null;
+					visible_only = null;
+					enabled_only = null;
 					arg = (ArgsQueue.Count > 0) ? ArgsQueue.Dequeue().ToLower() : "*";
 				}
 				mask = arg;
@@ -437,7 +437,7 @@ namespace Hosts
 				if (!mask.EndsWith("*")) mask += '*';
 			}
 
-			View(mask, visibleOnly, enabledOnly);
+			View(mask, visible_only, enabled_only);
 		}
 
 		static void AddHostsItem(NetAddress address, HostAliases aliases, string comment)
