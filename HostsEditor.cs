@@ -126,7 +126,7 @@ namespace Hosts
 		public List<HostsItem> GetMatched(string pattern, Func<HostsItem, bool> check = null)
 		{
 			var wp = new WildcardPattern(pattern);
-			return this.FindAll(item => item.Valid && !item.Deleted && item.Aliases.IsMatch(wp) && (check == null ? true : check(item)));
+			return this.GetValid().FindAll(item => item.Aliases.IsMatch(wp) && (check == null ? true : check(item)));
 		}
 	}
 }

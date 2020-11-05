@@ -1,12 +1,6 @@
-﻿Автоматическое удаление флага read only - перед каждой операцией с записью с восстанволением, или вообще, или не трогать?
+﻿Автоматическое удаление флага read only - перед каждой операцией с записью с восстанволением, или вообще, или не трогать? Можно заюзать новый модный RAII-подобный using для этих целей.
 Бэкап и роллбэк могут тоже оказаться с флагом readonly =(
 Избежать перезаписи файла hosts при каждом CanWrite()... Сделать функцию CanWrite(), и в ней делать проверку только один раз, результат запоминать? Или по факту когда пишем результат - тогда и проверять.
-
-Когда 127.0.0.1 download.eac-cdn.com download-alt.easyanticheat.net уже в hosts (выглядит будто что-то не так):
-hosts> hosts add download.eac-cdn.com download-alt.easyanticheat.net 127.0.0.1
-[UPDATED] 127.0.0.1 download-alt.easyanticheat.net
-[REMOVED] 127.0.0.1 download-alt.easyanticheat.net
-[ADDED] 127.0.0.1 download.eac-cdn.com download-alt.easyanticheat.net
 
 [15:30 2016-01-25] Проверить маски Hosts. что-то у кого-то в SeoLogic не работало.
 

@@ -68,5 +68,19 @@ namespace Hosts
 		{
 			return this.Exists(item => pattern.IsMatch(item.Unicode));
 		}
+
+		public bool ContainsAny(List<HostName> hosts)
+		{
+			foreach (HostName host in hosts)
+			{
+				if (this.Contains(host)) { return true; }
+			}
+			return false;
+		}
+
+		public int RemoveAll(List<HostName> hosts)
+		{
+			return this.RemoveAll(host => hosts.Contains(host));
+		}
 	}
 }

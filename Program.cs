@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.IO;
 using System.Text;
 using Microsoft.Win32;
@@ -444,21 +445,18 @@ namespace Hosts
 			if (aliases.Count == 0) throw new HostNotSpecifiedException();
 
 			// Remove duplicates
-			foreach (HostName host in aliases)
+			var lines = Hosts.GetValid().FindAll(item => item.IP.Type == address.Type && item.Aliases.ContainsAny(aliases));
+			foreach (var line in lines)
 			{
-				var lines = Hosts.FindAll(item => item.Valid && item.IP.Type == address.Type && item.Aliases.Contains(host));
-				foreach (var line in lines)
+				if (!line.Aliases.Except(aliases).Any())
 				{
-					if (line.Aliases.Count == 1)
-					{
-						Hosts.Remove(line);
-						Console.WriteLine("[REMOVED] {0} {1}", line.IP.ToString(), line.Aliases.ToString());
-					}
-					else
-					{
-						line.Aliases.Remove(host);
-						Console.WriteLine("[UPDATED] {0} {1}", line.IP.ToString(), line.Aliases.ToString());
-					}
+					Hosts.Remove(line);
+					Console.WriteLine("[REMOVED] {0} {1}", line.IP.ToString(), line.Aliases.ToString());
+				}
+				else
+				{
+					line.Aliases.RemoveAll(aliases);
+					Console.WriteLine("[UPDATED] {0} {1}", line.IP.ToString(), line.Aliases.ToString());
 				}
 			}
 
