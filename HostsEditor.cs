@@ -120,20 +120,13 @@ namespace Hosts
 
 		public List<HostsItem> GetValid()
 		{
-			return this.FindAll(item => item.Valid || !item.Deleted);
+			return this.FindAll(item => item.Valid && !item.Deleted);
 		}
 
 		public List<HostsItem> GetMatched(string pattern, Func<HostsItem, bool> check = null)
 		{
 			var wp = new WildcardPattern(pattern);
-			if (check == null)
-			{
-				return this.FindAll(item => item.Valid && item.Aliases.IsMatch(wp));
-			}
-			else
-			{
-				return this.FindAll(item => item.Valid && item.Aliases.IsMatch(wp) && check(item));
-			}
+			return this.FindAll(item => item.Valid && !item.Deleted && item.Aliases.IsMatch(wp) && (check == null ? true : check(item)));
 		}
 	}
 }
