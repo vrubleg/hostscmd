@@ -433,8 +433,7 @@ namespace Hosts
 					arg = (ArgsQueue.Count > 0) ? ArgsQueue.Dequeue().ToLower() : "*";
 				}
 				mask = arg;
-				if (!mask.StartsWith("*")) mask = '*' + mask;
-				if (!mask.EndsWith("*")) mask += '*';
+				if (!mask.StartsWith("*") && !mask.EndsWith("*")) mask = '*' + mask + '*';
 			}
 
 			View(mask, visible_only, enabled_only);
