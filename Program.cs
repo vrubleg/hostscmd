@@ -44,13 +44,11 @@ namespace Hosts
 			}
 		}
 
-		static bool CanWrite()
+		static bool CanWrite(string filename)
 		{
 			try
 			{
-				// Check if hosts file is writeable
-				var DataCopy = File.ReadAllBytes(HostsFile);
-				File.WriteAllBytes(HostsFile, DataCopy);
+				File.OpenWrite(filename).Close();
 				return true;
 			}
 			catch
@@ -219,7 +217,7 @@ namespace Hosts
 						return;
 
 					case "apply":
-						if (!CanWrite()) throw new NoWritePermissionException();
+						if (!CanWrite(HostsFile)) throw new NoWritePermissionException();
 						var ApplyHostsFile = ArgsQueue.Dequeue();
 						if (!File.Exists(ApplyHostsFile)) throw new Exception("Applied file does not exist");
 						File.Copy(HostsFile, RollbackFile, true);
@@ -228,14 +226,14 @@ namespace Hosts
 						return;
 
 					case "backup":
-						if (!CanWrite()) throw new NoWritePermissionException();
+						if (!CanWrite(HostsFile)) throw new NoWritePermissionException();
 						if (ArgsQueue.Count > 0) BackupFile = HostsFile + "." + ArgsQueue.Dequeue().ToLower();
 						File.Copy(HostsFile, BackupFile, true);
 						Console.WriteLine("[OK] Hosts file backed up successfully");
 						return;
 
 					case "restore":
-						if (!CanWrite()) throw new NoWritePermissionException();
+						if (!CanWrite(HostsFile)) throw new NoWritePermissionException();
 						if (ArgsQueue.Count > 0) BackupFile = HostsFile + "." + ArgsQueue.Dequeue().ToLower();
 						if (!File.Exists(BackupFile)) throw new Exception("Backup file does not exist");
 						File.Copy(HostsFile, RollbackFile, true);
@@ -244,7 +242,7 @@ namespace Hosts
 						return;
 
 					case "rollback":
-						if (!CanWrite()) throw new NoWritePermissionException();
+						if (!CanWrite(HostsFile)) throw new NoWritePermissionException();
 						if (!File.Exists(RollbackFile)) throw new Exception("Rollback file does not exist");
 						if (File.Exists(HostsFile)) File.Delete(HostsFile);
 						File.Move(RollbackFile, HostsFile);
@@ -253,7 +251,7 @@ namespace Hosts
 
 					case "empty":
 					case "recreate":
-						if (!CanWrite()) throw new NoWritePermissionException();
+						if (!CanWrite(HostsFile)) throw new NoWritePermissionException();
 						File.Copy(HostsFile, RollbackFile, true);
 						File.WriteAllText(HostsFile, new HostsItem("127.0.0.1", "localhost").ToString());
 						Console.WriteLine("[OK] New hosts file created successfully");
@@ -284,13 +282,13 @@ namespace Hosts
 						return;
 
 					case "format":
-						if (!CanWrite()) throw new NoWritePermissionException();
+						if (!CanWrite(HostsFile)) throw new NoWritePermissionException();
 						Hosts.ResetFormat();
 						Console.WriteLine("[OK] Hosts file formatted successfully");
 						break;
 
 					case "clean":
-						if (!CanWrite()) throw new NoWritePermissionException();
+						if (!CanWrite(HostsFile)) throw new NoWritePermissionException();
 						Hosts.RemoveInvalid();
 						Hosts.ResetFormat();
 						Console.WriteLine("[OK] Hosts file cleaned successfully");
@@ -298,19 +296,19 @@ namespace Hosts
 
 					case "add":
 					case "new":
-						if (!CanWrite()) throw new NoWritePermissionException();
+						if (!CanWrite(HostsFile)) throw new NoWritePermissionException();
 						RunAddMode();
 						break;
 
 					case "set":
-						if (!CanWrite()) throw new NoWritePermissionException();
+						if (!CanWrite(HostsFile)) throw new NoWritePermissionException();
 						RunUpdateMode(true);
 						break;
 
 					case "change":
 					case "update":
 					case "upd":
-						if (!CanWrite()) throw new NoWritePermissionException();
+						if (!CanWrite(HostsFile)) throw new NoWritePermissionException();
 						RunUpdateMode(false);
 						break;
 
@@ -319,7 +317,7 @@ namespace Hosts
 					case "remove":
 					case "del":
 					case "delete":
-						if (!CanWrite()) throw new NoWritePermissionException();
+						if (!CanWrite(HostsFile)) throw new NoWritePermissionException();
 						if (ArgsQueue.Count == 0) throw new HostNotSpecifiedException();
 						Lines = Hosts.GetMatched(args[1]);
 						if (Lines.Count == 0) throw new HostNotFoundException(args[1]);
@@ -332,7 +330,7 @@ namespace Hosts
 
 					case "on":
 					case "enable":
-						if (!CanWrite()) throw new NoWritePermissionException();
+						if (!CanWrite(HostsFile)) throw new NoWritePermissionException();
 						if (ArgsQueue.Count == 0) throw new HostNotSpecifiedException();
 						Lines = Hosts.GetMatched(args[1]);
 						if (Lines.Count == 0) throw new HostNotFoundException(args[1]);
@@ -345,7 +343,7 @@ namespace Hosts
 
 					case "off":
 					case "disable":
-						if (!CanWrite()) throw new NoWritePermissionException();
+						if (!CanWrite(HostsFile)) throw new NoWritePermissionException();
 						if (ArgsQueue.Count == 0) throw new HostNotSpecifiedException();
 						Lines = Hosts.GetMatched(args[1]);
 						if (Lines.Count == 0) throw new HostNotFoundException(args[1]);
@@ -357,7 +355,7 @@ namespace Hosts
 						break;
 
 					case "hide":
-						if (!CanWrite()) throw new NoWritePermissionException();
+						if (!CanWrite(HostsFile)) throw new NoWritePermissionException();
 						if (ArgsQueue.Count == 0) throw new HostNotSpecifiedException();
 						Lines = Hosts.GetMatched(args[1]);
 						if (Lines.Count == 0) throw new HostNotFoundException(args[1]);
@@ -369,7 +367,7 @@ namespace Hosts
 						break;
 
 					case "show":
-						if (!CanWrite()) throw new NoWritePermissionException();
+						if (!CanWrite(HostsFile)) throw new NoWritePermissionException();
 						if (ArgsQueue.Count == 0) throw new HostNotSpecifiedException();
 						Lines = Hosts.GetMatched(args[1]);
 						if (Lines.Count == 0) throw new HostNotFoundException(args[1]);
