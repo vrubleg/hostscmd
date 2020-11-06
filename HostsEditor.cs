@@ -11,9 +11,9 @@ namespace Hosts
 		public string FileName { get; set; }
 		public Encoding Encoding { get; protected set; }
 
-		public HostsEditor(string fileName = null) : base()
+		public HostsEditor(string filename = null) : base()
 		{
-			FileName = fileName;
+			FileName = filename;
 			Encoding = new UTF8Encoding(false);
 		}
 
@@ -46,16 +46,16 @@ namespace Hosts
 			Load(FileName);
 		}
 
-		public void Load(string fileName)
+		public void Load(string filename)
 		{
 			Clear();
 
-			if (!File.Exists(fileName))
+			if (!File.Exists(filename))
 			{
 				return;
 			}
 
-			byte[] HostsData = File.ReadAllBytes(fileName);
+			byte[] HostsData = File.ReadAllBytes(filename);
 			Encoding = (IsUTF8(HostsData)) ? new UTF8Encoding(false) : Encoding.Default;
 			var HostsReader = new StreamReader(new MemoryStream(HostsData), Encoding);
 			string line;
@@ -71,9 +71,9 @@ namespace Hosts
 			Save(FileName);
 		}
 
-		public void Save(string fileName)
+		public void Save(string filename)
 		{
-			var HostsStream = new FileStream(fileName, FileMode.Create, FileAccess.Write);
+			var HostsStream = new FileStream(filename, FileMode.Create, FileAccess.Write);
 			var HostsWriter = new StreamWriter(HostsStream, Encoding);
 			foreach (HostsItem item in this)
 			{

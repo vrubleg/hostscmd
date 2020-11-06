@@ -63,7 +63,7 @@ hosts set <host|mask> <addr> # <comment>
 
 hosts rem <host|mask>
  - Removes hostnames
- - Aliases: rm, remove, del, delete
+ - Aliases: rm, remove, del, delete, unset
  - Example: hosts rem *.local
 
 hosts enable <host|mask>
@@ -118,9 +118,10 @@ hosts open
 
 v1.6.2 [2020/XX/XX]
  - Fixed an error which may cause a freeze on a malformed hosts file..
- - The "list" command uses "--all" as an argument instead of "all".
+ - The "list" command uses "--all" as an argument instead of "all", and it can be before and after mask.
  - More understandable messages from the "add" command when you are trying to add already existing hosts.
  - Unset Read Only flag from the hosts file before changing it.
+ - New command aliases: "unset" for "rem", and "erase" for "empty".
 
 v1.6.1 [2019/07/07]
  - Program is built for .NET Framework 4.0 (it is preinstalled on Windows 8 and 10)

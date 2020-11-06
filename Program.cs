@@ -22,7 +22,6 @@ namespace Hosts
 	class Program
 	{
 		static bool IsUnix { get { return (Environment.OSVersion.Platform == PlatformID.Unix) || (Environment.OSVersion.Platform == PlatformID.MacOSX); } }
-		static string HostsFile;
 
 		static string GetHostsFileName()
 		{
@@ -189,9 +188,8 @@ namespace Hosts
 		}
 
 		static HostsEditor Hosts;
-		static Queue<string> ArgsQueue;
 	
-		static void View(string mask, bool? visibleOnly = null, bool? enabledOnly = null)
+		static void View(string mask, bool? visible_only = null, bool? enabled_only = null)
 		{
 			int enabled = 0;
 			int disabled = 0;
@@ -201,74 +199,77 @@ namespace Hosts
 
 			Hosts.RemoveInvalid();
 			Hosts.ResetFormat();
-			List<HostsItem> FoundLines = Hosts.GetMatched(mask);
-			foreach (HostsItem Line in FoundLines)
+			List<HostsItem> found_lines = Hosts.GetMatched(mask);
+			foreach (HostsItem line in found_lines)
 			{
-				if (Line.Enabled) enabled++; else disabled++;
-				if (Line.Hidden) hidden++;
-				if (visibleOnly != null && visibleOnly.Value == Line.Hidden) continue;
-				if (enabledOnly != null && enabledOnly.Value != Line.Enabled) continue;
-				Console.WriteLine(Line);
+				if (line.Enabled) enabled++; else disabled++;
+				if (line.Hidden) hidden++;
+				if (visible_only != null && visible_only.Value == line.Hidden) continue;
+				if (enabled_only != null && enabled_only.Value != line.Enabled) continue;
+				Console.WriteLine(line);
 			}
-			if (FoundLines.Count > 0) Console.WriteLine();
+			if (found_lines.Count > 0) Console.WriteLine();
 			Console.WriteLine("Enabled: {0,-4} Disabled: {1,-4} Hidden: {2,-4}", enabled, disabled, hidden);
 		}
 
-		static void Run(string[] args, bool interactive)
+		static void Run(List<string> args, bool interactive)
 		{
 			try
 			{
-				ArgsQueue = new Queue<string>(args);
-				string Mode = (ArgsQueue.Count > 0) ? ArgsQueue.Dequeue().ToLower() : "help";
-				string BackupFile = HostsFile + ".backup";
-				string RollbackFile = HostsFile + ".rollback";
+				var args_queue = new Queue<string>(args);
+				var mode = (args_queue.Count > 0) ? args_queue.Dequeue().ToLower() : "help";
+				var hosts_file = Hosts.FileName;
+				var backup_file = hosts_file + ".backup";
+				var rollback_file = hosts_file + ".rollback";
 
-				switch (Mode)
+				switch (mode)
 				{
 					case "open":
 						if (IsUnix) break;
 						var exe = FileAssoc.GetExecutable(".txt") ?? "notepad";
-						Process.Start(exe, '"' + HostsFile + '"');
+						Process.Start(exe, '"' + hosts_file + '"');
 						return;
 
 					case "apply":
-						if (!MakeWritable(HostsFile)) throw new NoWritePermissionException();
-						var ApplyHostsFile = ArgsQueue.Dequeue();
-						if (!File.Exists(ApplyHostsFile)) throw new Exception("Applied file does not exist");
-						ForceCopy(HostsFile, RollbackFile);
-						ForceCopy(ApplyHostsFile, HostsFile);
+						if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
+						if (args_queue.Count == 0) throw new Exception("Applied file is not specified");
+						var apply_file = args_queue.Dequeue();
+						if (!File.Exists(apply_file)) throw new Exception("Applied file does not exist");
+						ForceCopy(hosts_file, rollback_file);
+						ForceCopy(apply_file, hosts_file);
 						Console.WriteLine("[OK] New hosts file applied successfully");
 						return;
 
 					case "backup":
-						if (!MakeWritable(HostsFile)) throw new NoWritePermissionException();
-						if (ArgsQueue.Count > 0) BackupFile = HostsFile + "." + ArgsQueue.Dequeue().ToLower();
-						ForceCopy(HostsFile, BackupFile);
+						if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
+						if (args_queue.Count > 0) backup_file = hosts_file + "." + args_queue.Dequeue().ToLower();
+						ForceCopy(hosts_file, backup_file);
 						Console.WriteLine("[OK] Hosts file backed up successfully");
 						return;
 
 					case "restore":
-						if (!MakeWritable(HostsFile)) throw new NoWritePermissionException();
-						if (ArgsQueue.Count > 0) BackupFile = HostsFile + "." + ArgsQueue.Dequeue().ToLower();
-						if (!File.Exists(BackupFile)) throw new Exception("Backup file does not exist");
-						ForceCopy(HostsFile, RollbackFile);
-						ForceCopy(BackupFile, HostsFile);
+						if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
+						if (args_queue.Count > 0) backup_file = hosts_file + "." + args_queue.Dequeue().ToLower();
+						if (!File.Exists(backup_file)) throw new Exception("Backup file does not exist");
+						ForceCopy(hosts_file, rollback_file);
+						ForceCopy(backup_file, hosts_file);
 						Console.WriteLine("[OK] Hosts file restored successfully");
 						return;
 
 					case "rollback":
-						if (!MakeWritable(HostsFile)) throw new NoWritePermissionException();
-						if (!File.Exists(RollbackFile)) throw new Exception("Rollback file does not exist");
-						if (File.Exists(HostsFile)) File.Delete(HostsFile);
-						File.Move(RollbackFile, HostsFile);
+						if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
+						if (!File.Exists(rollback_file)) throw new Exception("Rollback file does not exist");
+						if (File.Exists(hosts_file)) File.Delete(hosts_file);
+						File.Move(rollback_file, hosts_file);
 						Console.WriteLine("[OK] Hosts file rolled back successfully");
 						return;
 
 					case "empty":
 					case "recreate":
-						if (!MakeWritable(HostsFile)) throw new NoWritePermissionException();
-						ForceCopy(HostsFile, RollbackFile);
-						File.WriteAllText(HostsFile, new HostsItem("127.0.0.1", "localhost").ToString());
+					case "erase":
+						if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
+						ForceCopy(hosts_file, rollback_file);
+						File.WriteAllText(hosts_file, new HostsItem("127.0.0.1", "localhost").ToString());
 						Console.WriteLine("[OK] New hosts file created successfully");
 						return;
 
@@ -277,11 +278,10 @@ namespace Hosts
 						return;
 				}
 
-				Hosts = new HostsEditor(HostsFile);
 				Hosts.Load();
 
 				List<HostsItem> Lines;
-				switch (Mode)
+				switch (mode)
 				{
 					case "print":
 					case "raw":
@@ -293,17 +293,17 @@ namespace Hosts
 					case "view":
 					case "select":
 					case "ls":
-						RunListMode(interactive);
+						RunListMode(args_queue.ToList(), interactive);
 						return;
 
 					case "format":
-						if (!MakeWritable(HostsFile)) throw new NoWritePermissionException();
+						if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
 						Hosts.ResetFormat();
 						Console.WriteLine("[OK] Hosts file formatted successfully");
 						break;
 
 					case "clean":
-						if (!MakeWritable(HostsFile)) throw new NoWritePermissionException();
+						if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
 						Hosts.RemoveInvalid();
 						Hosts.ResetFormat();
 						Console.WriteLine("[OK] Hosts file cleaned successfully");
@@ -311,20 +311,20 @@ namespace Hosts
 
 					case "add":
 					case "new":
-						if (!MakeWritable(HostsFile)) throw new NoWritePermissionException();
-						RunAddMode();
+						if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
+						RunAddMode(args_queue.ToList());
 						break;
 
 					case "set":
-						if (!MakeWritable(HostsFile)) throw new NoWritePermissionException();
-						RunUpdateMode(true);
+						if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
+						RunUpdateMode(args_queue.ToList(), true);
 						break;
 
 					case "change":
 					case "update":
 					case "upd":
-						if (!MakeWritable(HostsFile)) throw new NoWritePermissionException();
-						RunUpdateMode(false);
+						if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
+						RunUpdateMode(args_queue.ToList(), false);
 						break;
 
 					case "rem":
@@ -332,8 +332,9 @@ namespace Hosts
 					case "remove":
 					case "del":
 					case "delete":
-						if (!MakeWritable(HostsFile)) throw new NoWritePermissionException();
-						if (ArgsQueue.Count == 0) throw new HostNotSpecifiedException();
+					case "unset":
+						if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
+						if (args_queue.Count == 0) throw new HostNotSpecifiedException();
 						Lines = Hosts.GetMatched(args[1]);
 						if (Lines.Count == 0) throw new HostNotFoundException(args[1]);
 						foreach (HostsItem Line in Lines)
@@ -345,8 +346,8 @@ namespace Hosts
 
 					case "on":
 					case "enable":
-						if (!MakeWritable(HostsFile)) throw new NoWritePermissionException();
-						if (ArgsQueue.Count == 0) throw new HostNotSpecifiedException();
+						if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
+						if (args_queue.Count == 0) throw new HostNotSpecifiedException();
 						Lines = Hosts.GetMatched(args[1]);
 						if (Lines.Count == 0) throw new HostNotFoundException(args[1]);
 						foreach (HostsItem Line in Lines)
@@ -358,8 +359,8 @@ namespace Hosts
 
 					case "off":
 					case "disable":
-						if (!MakeWritable(HostsFile)) throw new NoWritePermissionException();
-						if (ArgsQueue.Count == 0) throw new HostNotSpecifiedException();
+						if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
+						if (args_queue.Count == 0) throw new HostNotSpecifiedException();
 						Lines = Hosts.GetMatched(args[1]);
 						if (Lines.Count == 0) throw new HostNotFoundException(args[1]);
 						foreach (HostsItem Line in Lines)
@@ -370,8 +371,8 @@ namespace Hosts
 						break;
 
 					case "hide":
-						if (!MakeWritable(HostsFile)) throw new NoWritePermissionException();
-						if (ArgsQueue.Count == 0) throw new HostNotSpecifiedException();
+						if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
+						if (args_queue.Count == 0) throw new HostNotSpecifiedException();
 						Lines = Hosts.GetMatched(args[1]);
 						if (Lines.Count == 0) throw new HostNotFoundException(args[1]);
 						foreach (HostsItem Line in Lines)
@@ -382,8 +383,8 @@ namespace Hosts
 						break;
 
 					case "show":
-						if (!MakeWritable(HostsFile)) throw new NoWritePermissionException();
-						if (ArgsQueue.Count == 0) throw new HostNotSpecifiedException();
+						if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
+						if (args_queue.Count == 0) throw new HostNotSpecifiedException();
 						Lines = Hosts.GetMatched(args[1]);
 						if (Lines.Count == 0) throw new HostNotFoundException(args[1]);
 						foreach (HostsItem Line in Lines)
@@ -398,8 +399,8 @@ namespace Hosts
 						Help(interactive);
 						return;
 				}
-				MakeWritable(RollbackFile);
-				ForceCopy(HostsFile, RollbackFile);
+				MakeWritable(rollback_file);
+				ForceCopy(hosts_file, rollback_file);
 				Hosts.Save();
 			}
 			catch (NoWritePermissionException)
@@ -424,7 +425,7 @@ namespace Hosts
 			}
 		}
 
-		static void RunListMode(bool interactive)
+		static void RunListMode(List<string> args, bool interactive)
 		{
 			if (!interactive)
 			{
@@ -436,18 +437,21 @@ namespace Hosts
 			bool? visible_only = true;
 			bool? enabled_only = true;
 			string mask = "*";
+			var args_queue = new Queue<string>(args);
 
-			if (ArgsQueue.Count > 0)
+			while (args_queue.Count > 0)
 			{
-				string arg = ArgsQueue.Dequeue().ToLower();
+				string arg = args_queue.Dequeue().ToLower();
 				if (arg == "--all")
 				{
 					visible_only = null;
 					enabled_only = null;
-					arg = (ArgsQueue.Count > 0) ? ArgsQueue.Dequeue().ToLower() : "*";
 				}
-				mask = arg;
-				if (!mask.StartsWith("*") && !mask.EndsWith("*")) mask = '*' + mask + '*';
+				else if (mask == "*")
+				{
+					mask = arg;
+					if (!mask.StartsWith("*") && !mask.EndsWith("*")) mask = '*' + mask + '*';
+				}
 			}
 
 			View(mask, visible_only, enabled_only);
@@ -479,18 +483,20 @@ namespace Hosts
 			Console.WriteLine("[ADDED] {0} {1}", new_item.IP.ToString(), new_item.Aliases.ToString());
 		}
 
-		static void RunAddMode()
+		static void RunAddMode(List<string> args)
 		{
-			if (ArgsQueue.Count == 0) throw new HostNotSpecifiedException();
+			if (args.Count == 0) throw new HostNotSpecifiedException();
+
 			HostAliases aliases = new HostAliases();
 			NetAddress address_ipv4 = null;
 			NetAddress address_ipv6 = null;
 			string comment = "";
 			bool in_comment = false;
 
-			while (ArgsQueue.Count > 0)
+			var args_queue = new Queue<string>(args);
+			while (args_queue.Count > 0)
 			{
-				string arg = ArgsQueue.Dequeue();
+				string arg = args_queue.Dequeue();
 				if (in_comment)
 				{
 					comment += arg + " ";
@@ -537,10 +543,12 @@ namespace Hosts
 			}
 		}
 
-		static void RunUpdateMode(bool autoadd = false)
+		static void RunUpdateMode(List<string> args, bool autoadd = false)
 		{
-			if (ArgsQueue.Count == 0) throw new HostNotSpecifiedException();
-			string mask = ArgsQueue.Dequeue();
+			if (args.Count == 0) throw new HostNotSpecifiedException();
+
+			var args_queue = new Queue<string>(args);
+			string mask = args_queue.Dequeue();
 			List<HostsItem> lines = Hosts.GetMatched(mask);
 			if (lines.Count == 0 && (!autoadd || mask.IndexOf('*') != -1))
 			{
@@ -552,9 +560,9 @@ namespace Hosts
 			string comment = null;
 			bool in_comment = false;
 
-			while (ArgsQueue.Count > 0)
+			while (args_queue.Count > 0)
 			{
-				string arg = ArgsQueue.Dequeue();
+				string arg = args_queue.Dequeue();
 				if (in_comment)
 				{
 					comment += arg + " ";
@@ -619,21 +627,22 @@ namespace Hosts
 
 		static void Init()
 		{
-			HostsFile = GetHostsFileName();
+			Hosts = new HostsEditor(GetHostsFileName());
 
 			try
 			{
 				// Create default hosts file if not exists
-				if (!File.Exists(HostsFile))
+				var hosts_file = Hosts.FileName;
+				if (!File.Exists(hosts_file))
 				{
-					File.WriteAllText(HostsFile, new HostsItem("127.0.0.1", "localhost").ToString());
+					File.WriteAllText(hosts_file, new HostsItem("127.0.0.1", "localhost").ToString());
 				}
 
 				// Try to create backup on first run
-				var BackupFile = HostsFile + ".backup";
-				if (!File.Exists(BackupFile))
+				var backup_file = hosts_file + ".backup";
+				if (!File.Exists(backup_file))
 				{
-					ForceCopy(HostsFile, BackupFile);
+					ForceCopy(hosts_file, backup_file);
 				}
 			}
 			catch
@@ -650,13 +659,13 @@ namespace Hosts
 
 				if (args.Length > 0)
 				{
-					Run(args, false);
+					Run(args.ToList(), false);
 				}
 				else
 				{
 					Console.WriteLine(GetTitle());
 					Console.WriteLine(GetCopyright());
-					Console.WriteLine("Hosts file: " + HostsFile.ToLower());
+					Console.WriteLine("Hosts file: " + Hosts.FileName.ToLower());
 					Console.WriteLine();
 					while (true)
 					{
@@ -668,8 +677,7 @@ namespace Hosts
 							command = command.Substring(6).TrimStart();
 						}
 						if (command == "exit" || command == "quit") break;
-						args = command.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-						Run(args, true);
+						Run(command.Split(new char[] {' '}, StringSplitOptions.RemoveEmptyEntries).ToList(), true);
 						Console.WriteLine();
 					}
 				}
