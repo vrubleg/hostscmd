@@ -1,11 +1,11 @@
-﻿Hosts Commander v1.6.1 [2019/07/07]
-(С) 2010-2019 Evgeny Vrublevsky <me@veg.by>
+Hosts Commander v1.6.2 [2020/11/21]
+(С) 2010-2020 Evgeny Vrublevsky <me@veg.by>
 http://veg.by/en/projects/hostscmd/
 
-This program allows you edit the hosts file easily from the Command Prompt. It is for everybody who likes to use command line.
+Command line hosts file editor.
 
 Features:
- - Adding, removing, disabling, and hiding hosts operations
+ - Adding, removing, disabling, and hiding hosts
  - Viewing list of hosts filtered by a mask
  - Batch operations on hosts by a mask
  - Creation of backup hosts files and rolling back of previous changes
@@ -106,7 +106,7 @@ hosts rollback
 
 hosts empty
  - Replaces current hosts file with a new one with just one default host (localhost)
- - Aliases: recreate
+ - Aliases: recreate, erase
 
 hosts open
  - Opens hosts file in default text editor for *.txt files
@@ -116,8 +116,8 @@ hosts open
   Changelog
 ------------------------------------------------------------------------------------------------------------------------
 
-v1.6.2 [2020/XX/XX]
- - Fixed an error which may cause a freeze on a malformed hosts file..
+v1.6.2 [2020/11/21]
+ - Fixed an error which may cause a freeze on a malformed hosts file.
  - The "list" command uses "--all" as an argument instead of "all", and it can be before and after mask.
  - More understandable messages from the "add" command when you are trying to add already existing hosts.
  - Unset Read Only flag from the hosts file before changing it.
