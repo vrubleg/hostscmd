@@ -1,4 +1,0 @@
-glob:bin/*
-glob:obj/*
-glob:*.suo
-glob:*.csproj.user
