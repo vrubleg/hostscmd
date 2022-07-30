@@ -22,7 +22,7 @@ namespace Hosts
 			this.FileName = source.FileName;
 			this.Encoding = source.Encoding;
 		}
-		
+
 		public HostsEditor Clone()
 		{
 			return new HostsEditor(this);
@@ -49,6 +49,9 @@ namespace Hosts
 		public void Load(string filename)
 		{
 			Clear();
+
+			FileName = filename;
+			Encoding = new UTF8Encoding(false);
 
 			if (!File.Exists(filename))
 			{
@@ -77,8 +80,10 @@ namespace Hosts
 			var HostsWriter = new StreamWriter(HostsStream, Encoding);
 			foreach (HostsItem item in this)
 			{
-				if (item.Deleted) break;
-				HostsWriter.WriteLine(item.RawString);
+				if (!item.Deleted)
+				{
+					HostsWriter.WriteLine(item.RawString);
+				}
 			}
 			HostsWriter.Close();
 		}
