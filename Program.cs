@@ -19,9 +19,9 @@ class HostNotFoundException : ApplicationException
 	public HostNotFoundException(string host) { Host = host; }
 }
 
-class Program
+static class Program
 {
-	static bool IsUnix { get { return (Environment.OSVersion.Platform == PlatformID.Unix) || (Environment.OSVersion.Platform == PlatformID.MacOSX); } }
+	static readonly bool IsUnix = (Environment.OSVersion.Platform == PlatformID.Unix) || (Environment.OSVersion.Platform == PlatformID.MacOSX);
 
 	static string GetHostsFileName()
 	{
