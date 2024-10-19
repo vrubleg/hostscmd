@@ -4,134 +4,133 @@ using System.Linq;
 using System.Text;
 using System.IO;
 
-namespace Hosts
+namespace Hosts;
+
+public class HostsEditor : List<HostsItem>
 {
-	public class HostsEditor : List<HostsItem>
+	public string FileName { get; set; }
+	public Encoding Encoding { get; protected set; }
+
+	public HostsEditor(string filename = null) : base()
 	{
-		public string FileName { get; set; }
-		public Encoding Encoding { get; protected set; }
+		FileName = filename;
+		Encoding = new UTF8Encoding(false);
+	}
 
-		public HostsEditor(string filename = null) : base()
+	public HostsEditor(HostsEditor source) : base(source.Select(item => item.Clone()).ToArray())
+	{
+		this.FileName = source.FileName;
+		this.Encoding = source.Encoding;
+	}
+
+	public HostsEditor Clone()
+	{
+		return new HostsEditor(this);
+	}
+
+	private bool IsUTF8(byte[] data)
+	{
+		try
 		{
-			FileName = filename;
-			Encoding = new UTF8Encoding(false);
+			new UTF8Encoding(false, true).GetCharCount(data);
+			return true;
+		}
+		catch
+		{
+			return false;
+		}
+	}
+
+	public void Load()
+	{
+		Load(FileName);
+	}
+
+	public void Load(string filename)
+	{
+		Clear();
+
+		FileName = filename;
+		Encoding = new UTF8Encoding(false);
+
+		if (!File.Exists(filename))
+		{
+			return;
 		}
 
-		public HostsEditor(HostsEditor source) : base(source.Select(item => item.Clone()).ToArray())
+		byte[] HostsData = File.ReadAllBytes(filename);
+		Encoding = (IsUTF8(HostsData)) ? new UTF8Encoding(false) : Encoding.Default;
+		var HostsReader = new StreamReader(new MemoryStream(HostsData), Encoding);
+		string line;
+		while ((line = HostsReader.ReadLine()) != null)
 		{
-			this.FileName = source.FileName;
-			this.Encoding = source.Encoding;
+			HostsItem item = new HostsItem(line);
+			this.Add(item);
 		}
+	}
 
-		public HostsEditor Clone()
-		{
-			return new HostsEditor(this);
-		}
+	public void Save()
+	{
+		Save(FileName);
+	}
 
-		private bool IsUTF8(byte[] data)
+	public void Save(string filename)
+	{
+		var HostsStream = new FileStream(filename, FileMode.Create, FileAccess.Write);
+		var HostsWriter = new StreamWriter(HostsStream, Encoding);
+		foreach (HostsItem item in this)
 		{
-			try
+			if (!item.Deleted)
 			{
-				new UTF8Encoding(false, true).GetCharCount(data);
-				return true;
-			}
-			catch
-			{
-				return false;
+				HostsWriter.WriteLine(item.RawString);
 			}
 		}
+		HostsWriter.Close();
+	}
 
-		public void Load()
-		{
-			Load(FileName);
-		}
+	public void Add(NetAddress ip, HostAliases hosts, string comment = "")
+	{
+		base.Add(new HostsItem(ip, hosts, comment));
+	}
 
-		public void Load(string filename)
-		{
-			Clear();
+	public void ResetFormat(bool resetFormat = true)
+	{
+		this.ForEach(item => item.ResetFormat = resetFormat);
+	}
 
-			FileName = filename;
-			Encoding = new UTF8Encoding(false);
+	public void RemoveInvalid()
+	{
+		this.RemoveAll(item => !item.Valid || item.Deleted);
+	}
 
-			if (!File.Exists(filename))
-			{
-				return;
-			}
+	public void RemoveDeleted()
+	{
+		this.RemoveAll(item => item.Deleted);
+	}
 
-			byte[] HostsData = File.ReadAllBytes(filename);
-			Encoding = (IsUTF8(HostsData)) ? new UTF8Encoding(false) : Encoding.Default;
-			var HostsReader = new StreamReader(new MemoryStream(HostsData), Encoding);
-			string line;
-			while ((line = HostsReader.ReadLine()) != null)
-			{
-				HostsItem item = new HostsItem(line);
-				this.Add(item);
-			}
-		}
+	public int RemoveLinesWithHost(HostName host)
+	{
+		return this.RemoveAll(item => item.Valid && item.Aliases.Contains(host));
+	}
 
-		public void Save()
-		{
-			Save(FileName);
-		}
+	public int RemoveLinesWithHost(HostName host, NetAddressType type)
+	{
+		return this.RemoveAll(item => item.Valid && (type == NetAddressType.None || item.IP.Type == type) && item.Aliases.Contains(host));
+	}
 
-		public void Save(string filename)
-		{
-			var HostsStream = new FileStream(filename, FileMode.Create, FileAccess.Write);
-			var HostsWriter = new StreamWriter(HostsStream, Encoding);
-			foreach (HostsItem item in this)
-			{
-				if (!item.Deleted)
-				{
-					HostsWriter.WriteLine(item.RawString);
-				}
-			}
-			HostsWriter.Close();
-		}
+	public int RemoveLinesWithIp(NetAddress ip)
+	{
+		return this.RemoveAll(item => item.Valid && item.IP == ip);
+	}
 
-		public void Add(NetAddress ip, HostAliases hosts, string comment = "")
-		{
-			base.Add(new HostsItem(ip, hosts, comment));
-		}
+	public List<HostsItem> GetValid()
+	{
+		return this.FindAll(item => item.Valid && !item.Deleted);
+	}
 
-		public void ResetFormat(bool resetFormat = true)
-		{
-			this.ForEach(item => item.ResetFormat = resetFormat);
-		}
-
-		public void RemoveInvalid()
-		{
-			this.RemoveAll(item => !item.Valid || item.Deleted);
-		}
-
-		public void RemoveDeleted()
-		{
-			this.RemoveAll(item => item.Deleted);
-		}
-
-		public int RemoveLinesWithHost(HostName host)
-		{
-			return this.RemoveAll(item => item.Valid && item.Aliases.Contains(host));
-		}
-
-		public int RemoveLinesWithHost(HostName host, NetAddressType type)
-		{
-			return this.RemoveAll(item => item.Valid && (type == NetAddressType.None || item.IP.Type == type) && item.Aliases.Contains(host));
-		}
-
-		public int RemoveLinesWithIp(NetAddress ip)
-		{
-			return this.RemoveAll(item => item.Valid && item.IP == ip);
-		}
-
-		public List<HostsItem> GetValid()
-		{
-			return this.FindAll(item => item.Valid && !item.Deleted);
-		}
-
-		public List<HostsItem> GetMatched(string pattern, Func<HostsItem, bool> check = null)
-		{
-			var wp = new WildcardPattern(pattern);
-			return this.GetValid().FindAll(item => item.Aliases.IsMatch(wp) && (check == null ? true : check(item)));
-		}
+	public List<HostsItem> GetMatched(string pattern, Func<HostsItem, bool> check = null)
+	{
+		var wp = new WildcardPattern(pattern);
+		return this.GetValid().FindAll(item => item.Aliases.IsMatch(wp) && (check == null ? true : check(item)));
 	}
 }

@@ -2,6 +2,8 @@ using System;
 using System.Text;
 using System.Security.Cryptography;
 
+namespace Hosts;
+
 static class HalfMD5
 {
 	private static MD5 md5 = new MD5CryptoServiceProvider();

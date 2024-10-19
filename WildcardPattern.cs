@@ -4,21 +4,20 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace Hosts
+namespace Hosts;
+
+public class WildcardPattern
 {
-	public class WildcardPattern
+	private Regex regex;
+
+	public WildcardPattern(string pattern)
 	{
-		private Regex regex;
+		pattern = "^" + pattern.Replace(".", @"\.").Replace("?", ".").Replace("*", ".*") + "$";
+		regex = new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled);
+	}
 
-		public WildcardPattern(string pattern)
-		{
-			pattern = "^" + pattern.Replace(".", @"\.").Replace("?", ".").Replace("*", ".*") + "$";
-			regex = new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled);
-		}
-
-		public bool IsMatch(string text)
-		{
-			return regex.IsMatch(text);
-		}
+	public bool IsMatch(string text)
+	{
+		return regex.IsMatch(text);
 	}
 }
