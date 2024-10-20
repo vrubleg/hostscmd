@@ -33,7 +33,7 @@ hosts
 hosts list [--all] <mask>
  - Displays enabled and not hidden hostnames by default
  - With "--all" flag, it displays disabled and hidden hosts also
- - Aliases: view, select, ls
+ - Aliases: view, select, ls, show
  - Example: list vk
  - Example: list all *.local
 
@@ -80,7 +80,7 @@ hosts hide <host|mask>
  - Hides hostnames from "hosts view"
  - It is useful when you have a lot of hostnames most of which are not important
 
-hosts show <host|mask>
+hosts unhide <host|mask>
  - Unhides hostnames from "hosts view"
 
 hosts print
@@ -117,8 +117,10 @@ hosts open
 ------------------------------------------------------------------------------------------------------------------------
 
 v1.6.x [202x/xx/xx]
+ - Command "show" renamed to "unhide" to better reflect what it does.
+ - Command "list" treats "show" as an alias.
  - Execute as a 64-bit process on 64-bit Windows.
- - Cosmetic changes.
+ - Other cosmetic changes.
 
 v1.6.2 [2020/11/21]
  - Fixed an error which may cause a freeze on a malformed hosts file.

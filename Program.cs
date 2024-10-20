@@ -169,7 +169,7 @@ static class Program
 		Console.WriteLine("  off  <host|mask>       - disable host");
 		Console.WriteLine("  list [--all] <mask>    - display enabled and visible, or all hosts");
 		Console.WriteLine("  hide <host|mask>       - hide host from 'hosts list'");
-		Console.WriteLine("  show <host|mask>       - show host in 'hosts list'");
+		Console.WriteLine("  unhide <host|mask>     - unhide host");
 		Console.WriteLine("  print      - display raw hosts file");
 		Console.WriteLine("  format     - format host rows");
 		Console.WriteLine("  clean      - format and remove all comments");
@@ -296,6 +296,7 @@ static class Program
 				case "view":
 				case "select":
 				case "ls":
+				case "show":
 					RunListMode(args_queue.ToList(), interactive);
 					return;
 
@@ -385,7 +386,7 @@ static class Program
 					}
 					break;
 
-				case "show":
+				case "unhide":
 					if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
 					if (args_queue.Count == 0) throw new HostNotSpecifiedException();
 					Lines = Hosts.GetMatched(args[1]);
@@ -393,7 +394,7 @@ static class Program
 					foreach (HostsItem Line in Lines)
 					{
 						Line.Hidden = false;
-						Console.WriteLine("[SHOWN] {0} {1}", Line.IP.ToString(), Line.Aliases.ToString());
+						Console.WriteLine("[UNHIDDEN] {0} {1}", Line.IP.ToString(), Line.Aliases.ToString());
 					}
 					break;
 
