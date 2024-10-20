@@ -40,7 +40,7 @@ static class Program
 		}
 		catch (Exception e)
 		{
-			throw new Exception("Cannot get path to the hosts file from the registry", e);
+			throw new Exception("Cannot get path to hosts file from registry.", e);
 		}
 	}
 
@@ -237,14 +237,14 @@ static class Program
 					if (!File.Exists(apply_file)) throw new Exception("Applied file does not exist.");
 					ForceCopy(hosts_file, rollback_file);
 					ForceCopy(apply_file, hosts_file);
-					Console.WriteLine("[OK] New hosts file applied successfully.");
+					Console.WriteLine("[OK] New hosts file is applied successfully.");
 					return true;
 
 				case "backup":
 					if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
 					if (args_queue.Count > 0) backup_file = hosts_file + "." + args_queue.Dequeue().ToLower();
 					ForceCopy(hosts_file, backup_file);
-					Console.WriteLine("[OK] Hosts file backed up successfully.");
+					Console.WriteLine("[OK] Hosts file is backed up successfully.");
 					return true;
 
 				case "restore":
@@ -253,7 +253,7 @@ static class Program
 					if (!File.Exists(backup_file)) throw new Exception("Backup file does not exist.");
 					ForceCopy(hosts_file, rollback_file);
 					ForceCopy(backup_file, hosts_file);
-					Console.WriteLine("[OK] Hosts file restored successfully.");
+					Console.WriteLine("[OK] Hosts file is restored successfully.");
 					return true;
 
 				case "rollback":
@@ -261,7 +261,7 @@ static class Program
 					if (!File.Exists(rollback_file)) throw new Exception("Rollback file does not exist.");
 					if (File.Exists(hosts_file)) File.Delete(hosts_file);
 					File.Move(rollback_file, hosts_file);
-					Console.WriteLine("[OK] Hosts file rolled back successfully.");
+					Console.WriteLine("[OK] Hosts file is rolled back successfully.");
 					return true;
 
 				case "reset":
@@ -271,7 +271,7 @@ static class Program
 					if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
 					ForceCopy(hosts_file, rollback_file);
 					File.WriteAllText(hosts_file, new HostsItem("127.0.0.1", "localhost").ToString());
-					Console.WriteLine("[OK] New hosts file created successfully.");
+					Console.WriteLine("[OK] New hosts file is created successfully.");
 					return true;
 
 				case "help":
@@ -304,14 +304,14 @@ static class Program
 				case "format":
 					if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
 					Hosts.ResetFormat();
-					Console.WriteLine("[OK] Hosts file formatted successfully.");
+					Console.WriteLine("[OK] Hosts file is formatted successfully.");
 					break;
 
 				case "clean":
 					if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
 					Hosts.RemoveInvalid();
 					Hosts.ResetFormat();
-					Console.WriteLine("[OK] Hosts file cleaned successfully.");
+					Console.WriteLine("[OK] Hosts file is cleaned successfully.");
 					break;
 
 				case "add":
@@ -417,12 +417,12 @@ static class Program
 		}
 		catch (HostNotSpecifiedException)
 		{
-			Console.WriteLine("[ERROR] Host not specified.");
+			Console.WriteLine("[ERROR] Host is not specified.");
 			return false;
 		}
 		catch (HostNotFoundException e)
 		{
-			Console.WriteLine("[ERROR] Host '{0}' not found.", e.Host);
+			Console.WriteLine("[ERROR] Host '{0}' is not found.", e.Host);
 			return false;
 		}
 		catch (Exception e)
