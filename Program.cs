@@ -157,33 +157,33 @@ static class Program
 			{GetDescription()}
 
 			Usage:
-			  hosts [shell]     - run interactive shell
-			  hosts <command>   - execute a command
+			    hosts [shell]   Run interactive shell.
+			    hosts <cmd>     Execute a command.
 
 			""");
 		Console.WriteLine("""
 			Commands:
-			  add  <host> [aliases] [ip] # <comment>   - add new host
-			  set  <host|mask> [ip] # <comment>        - set ip and comment for host
-			  rem  <host|mask>       - remove host
-			  on   <host|mask>       - enable host
-			  off  <host|mask>       - disable host
-			  list [--all] <mask>    - display enabled and visible, or all hosts
-			  hide <host|mask>       - hide host from 'hosts list'
-			  unhide <host|mask>     - unhide host
-			  print      - display raw hosts file
-			  format     - format host rows
-			  clean      - format and remove all comments
-			  rollback   - rollback last operation
-			  backup     - backup hosts file
-			  restore    - restore hosts file from backup
-			  empty      - empty hosts file
+			    add  <host> [aliases] [ip] # <comment>  Add new host.
+			    set  <host|mask> [ip] # <comment>       Update host.
+			    del  <host|mask>        Delete host.
+			    on   <host|mask>        Enable host.
+			    off  <host|mask>        Disable host.
+			    list [--all] <mask>     Display active or all hosts.
+			    hide <host|mask>        Hide host from 'list'.
+			    unhide <host|mask>      Unhide host.
+			    print       Display raw hosts file.
+			    format      Reformat hosts file.
+			    clean       Reformat and delete all comments.
+			    rollback    Rollback last operation.
+			    backup      Backup hosts file.
+			    restore     Restore hosts file from backup.
+			    empty       Empty hosts file.
 			""");
 		if (!IsUnix) Console.WriteLine("""
-			  open       - open hosts file in notepad
+			    open       - open hosts file in notepad
 			""");
 		if (IsShell) Console.WriteLine("""
-			  exit       - exit from the shell
+			    exit       - exit from the shell
 			""");
 	}
 
