@@ -89,9 +89,9 @@ static class Program
 			title += " v" + version;
 		}
 
-		#if DEBUG
+#if DEBUG
 		title += " DEBUG";
-		#endif
+#endif
 
 		var date = GetBuildDate();
 		if (date != DateTime.MinValue)
@@ -149,42 +149,41 @@ static class Program
 
 	static void Help(bool interactive)
 	{
-		if (!interactive)
-		{
-			Console.WriteLine(GetTitle());
-			Console.WriteLine(GetCopyright());
-			Console.WriteLine();
-			Console.WriteLine(GetDescription());
-			Console.WriteLine();
-			Console.WriteLine("Usage:");
-			Console.WriteLine("  hosts - run hosts command interpreter");
-			Console.WriteLine("  hosts <command> <params> - execute hosts command");
-		}
-		Console.WriteLine();
-		Console.WriteLine("Commands:");
-		Console.WriteLine("  add  <host> <aliases> <addr> # <comment>   - add new host");
-		Console.WriteLine("  set  <host|mask> <addr> # <comment>        - set ip and comment for host");
-		Console.WriteLine("  rem  <host|mask>       - remove host");
-		Console.WriteLine("  on   <host|mask>       - enable host");
-		Console.WriteLine("  off  <host|mask>       - disable host");
-		Console.WriteLine("  list [--all] <mask>    - display enabled and visible, or all hosts");
-		Console.WriteLine("  hide <host|mask>       - hide host from 'hosts list'");
-		Console.WriteLine("  unhide <host|mask>     - unhide host");
-		Console.WriteLine("  print      - display raw hosts file");
-		Console.WriteLine("  format     - format host rows");
-		Console.WriteLine("  clean      - format and remove all comments");
-		Console.WriteLine("  rollback   - rollback last operation");
-		Console.WriteLine("  backup     - backup hosts file");
-		Console.WriteLine("  restore    - restore hosts file from backup");
-		Console.WriteLine("  empty      - empty hosts file");
-		if (!IsUnix)
-		{
-			Console.WriteLine("  open       - open hosts file in notepad");
-		}
-		if (interactive)
-		{
-			Console.WriteLine("  exit       - exit from command interpreter");
-		}
+		if (!interactive) Console.WriteLine($"""
+			{GetTitle()}
+			{GetCopyright()}
+
+			{GetDescription()}
+
+			Usage:
+			  hosts                                      - run hosts command interpreter
+			  hosts <command> <params>                   - execute hosts command
+			""");
+		Console.WriteLine("""
+
+			Commands:
+			  add  <host> <aliases> <addr> # <comment>   - add new host
+			  set  <host|mask> <addr> # <comment>        - set ip and comment for host
+			  rem  <host|mask>       - remove host
+			  on   <host|mask>       - enable host
+			  off  <host|mask>       - disable host
+			  list [--all] <mask>    - display enabled and visible, or all hosts
+			  hide <host|mask>       - hide host from 'hosts list'
+			  unhide <host|mask>     - unhide host
+			  print      - display raw hosts file
+			  format     - format host rows
+			  clean      - format and remove all comments
+			  rollback   - rollback last operation
+			  backup     - backup hosts file
+			  restore    - restore hosts file from backup
+			  empty      - empty hosts file
+			""");
+		if (!IsUnix) Console.WriteLine("""
+			  open       - open hosts file in notepad
+			""");
+		if (interactive) Console.WriteLine("""
+			  exit       - exit from command interpreter
+			""");
 	}
 
 	static HostsEditor Hosts;
@@ -403,6 +402,7 @@ static class Program
 					Help(interactive);
 					return;
 			}
+
 			MakeWritable(rollback_file);
 			ForceCopy(hosts_file, rollback_file);
 			Hosts.Save();
@@ -688,11 +688,11 @@ static class Program
 		}
 		catch (Exception e)
 		{
-			#if DEBUG
+#if DEBUG
 			Console.WriteLine("[ERROR] " + e.ToString());
-			#else
+#else
 			Console.WriteLine("[ERROR] " + e.Message);
-			#endif
+#endif
 			Console.ReadKey();
 		}
 	}
