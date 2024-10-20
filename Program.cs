@@ -21,6 +21,7 @@ class HostNotFoundException : ApplicationException
 
 static class Program
 {
+	static bool IsShell = false;
 	static readonly bool IsUnix = (Environment.OSVersion.Platform == PlatformID.Unix) || (Environment.OSVersion.Platform == PlatformID.MacOSX);
 
 	static string GetHostsFileName()
@@ -147,9 +148,9 @@ static class Program
 		return (attr == null) ? String.Empty : attr.Description;
 	}
 
-	static void Help(bool interactive)
+	static void Help()
 	{
-		if (!interactive) Console.WriteLine($"""
+		if (!IsShell) Console.WriteLine($"""
 			{GetTitle()}
 			{GetCopyright()}
 
@@ -181,7 +182,7 @@ static class Program
 		if (!IsUnix) Console.WriteLine("""
 			  open       - open hosts file in notepad
 			""");
-		if (interactive) Console.WriteLine("""
+		if (IsShell) Console.WriteLine("""
 			  exit       - exit from the shell
 			""");
 	}
@@ -211,7 +212,7 @@ static class Program
 		Console.WriteLine("Enabled: {0,-4} Disabled: {1,-4} Hidden: {2,-4}", enabled, disabled, hidden);
 	}
 
-	static void Run(List<string> args, bool interactive)
+	static void Run(List<string> args)
 	{
 		try
 		{
@@ -276,7 +277,7 @@ static class Program
 				case "--help":
 				case "-h":
 				case "/?":
-					Help(interactive);
+					Help();
 					return;
 			}
 
@@ -398,8 +399,8 @@ static class Program
 					break;
 
 				default:
-					Console.WriteLine($"[ERROR] Unknown command '{mode}'.");
-					Help(interactive);
+					Console.WriteLine($"[ERROR] Unknown command '{mode}'.\n");
+					Help();
 					return;
 			}
 
@@ -656,10 +657,11 @@ static class Program
 
 			if (args.Length > 0 && args[0].ToLower() != "shell")
 			{
-				Run(args.ToList(), false);
+				Run(args.ToList());
 			}
 			else
 			{
+				IsShell = true;
 				Console.WriteLine(GetTitle());
 				Console.WriteLine(GetCopyright());
 				Console.WriteLine("Hosts file: " + Hosts.FileName.ToLower());
@@ -674,7 +676,7 @@ static class Program
 						command = command.Substring(6).TrimStart();
 					}
 					if (command == "exit" || command == "quit") break;
-					Run(command.Split(new char[] {' '}, StringSplitOptions.RemoveEmptyEntries).ToList(), true);
+					Run(command.Split(new char[] {' '}, StringSplitOptions.RemoveEmptyEntries).ToList());
 					Console.WriteLine();
 				}
 			}
