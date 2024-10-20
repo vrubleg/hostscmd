@@ -180,10 +180,10 @@ static class Program
 			    reset       Reset hosts file (remove everything).
 			""");
 		if (!IsUnix) Console.WriteLine("""
-			    open       - open hosts file in notepad
+			    open        Open hosts file in notepad.
 			""");
 		if (IsShell) Console.WriteLine("""
-			    exit       - exit from the shell
+			    exit        Exit from the shell.
 			""");
 	}
 
@@ -250,7 +250,7 @@ static class Program
 				case "restore":
 					if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
 					if (args_queue.Count > 0) backup_file = hosts_file + "." + args_queue.Dequeue().ToLower();
-					if (!File.Exists(backup_file)) throw new Exception("Backup file does not exist");
+					if (!File.Exists(backup_file)) throw new Exception("Backup file does not exist.");
 					ForceCopy(hosts_file, rollback_file);
 					ForceCopy(backup_file, hosts_file);
 					Console.WriteLine("[OK] Hosts file restored successfully.");
@@ -258,7 +258,7 @@ static class Program
 
 				case "rollback":
 					if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
-					if (!File.Exists(rollback_file)) throw new Exception("Rollback file does not exist");
+					if (!File.Exists(rollback_file)) throw new Exception("Rollback file does not exist.");
 					if (File.Exists(hosts_file)) File.Delete(hosts_file);
 					File.Move(rollback_file, hosts_file);
 					Console.WriteLine("[OK] Hosts file rolled back successfully.");

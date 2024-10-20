@@ -37,9 +37,9 @@ hosts list [--all] <mask>
  - Example: list vk
  - Example: list all *.local
 
-hosts add <host> <aliases> <addr> # <comment>
- - Adds a new hostname, <addr> is 127.0.0.1 by default
- - Argument <aliases> is not mandatory
+hosts add <host> [aliases] [ip] # <comment>
+ - Adds a new hostname, [ip] is 127.0.0.1 by default
+ - Argument [aliases] is not mandatory
  - All arguments before "#" can be in any order
  - Everything after "#" is a comment
  - Aliases: new
@@ -47,14 +47,14 @@ hosts add <host> <aliases> <addr> # <comment>
  - Example: hosts add another.dev 192.168.1.1 # Remote host
  - Example: hosts add домен.рф # IDN host demo
 
-hosts upd <host|mask> <addr> # <comment>
+hosts upd <host|mask> [ip] # <comment>
  - Updates IP address and comment of a hostname
  - Everything after "#" is a comment
  - Aliases: update, change
  - Example: hosts upd myhost.dev # new comment
  - Example: hosts upd another.dev 192.168.1.1
 
-hosts set <host|mask> <addr> # <comment>
+hosts set <host|mask> [ip] # <comment>
  - Adds a new hostname or updates its IP address and comment
  - A mixture of "add" and "upd"
  - Everything after "#" is a comment
@@ -64,7 +64,7 @@ hosts set <host|mask> <addr> # <comment>
 hosts del <host|mask>
  - Deletes hostnames
  - Aliases: rem, rm, remove, delete, unset
- - Example: hosts rem *.local
+ - Example: hosts del *.local
 
 hosts enable <host|mask>
  - Enables hostnames
@@ -93,13 +93,13 @@ hosts format
 hosts clean
  - Removes all comments and formats all lines in the hosts file
 
-hosts backup <name>
+hosts backup [name]
  - Makes a backup copy of the hosts file
- - Argument <name> is not required, it is "backup" by default
+ - Argument [name] is not required, it is "backup" by default
 
-hosts restore <name>
+hosts restore [name]
  - Restores hosts file from a backup copy
- - Argument <name> is not required, it is "backup" by default
+ - Argument [name] is not required, it is "backup" by default
 
 hosts rollback
  - Rollbacks previous operation with hosts file

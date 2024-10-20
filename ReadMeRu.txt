@@ -37,9 +37,9 @@ hosts list [--all] <mask>
  - Пример: list vk
  - Пример: list --all *.local
 
-hosts add <host> <aliases> <addr> # <comment>
- - Добавляет новый хост, <addr> по умолчанию 127.0.0.1
- - Парамер <aliases> может отсутствовать
+hosts add <host> [aliases] [ip] # <comment>
+ - Добавляет новый хост, [ip] по умолчанию 127.0.0.1
+ - Парамер [aliases] может отсутствовать
  - Параметры до # могут иметь произвольный порядок
  - Всё что после # — комментарий
  - Алиасы: new
@@ -47,14 +47,14 @@ hosts add <host> <aliases> <addr> # <comment>
  - Пример: hosts add another.dev 192.168.1.1 # Remote host
  - Пример: hosts add домен.рф # IDN host demo
 
-hosts upd <host|mask> <addr> # <comment>
+hosts upd <host|mask> [ip] # <comment>
  - Обновляет IP адрес и комментарий хоста
  - Всё что после # — комментарий
  - Алиасы: update, change
  - Пример: hosts upd myhost.dev # new comment
  - Пример: hosts upd another.dev 192.168.1.1
 
-hosts set <host|mask> <addr> # <comment>
+hosts set <host|mask> [ip] # <comment>
  - Добавляет хост или обновляет его IP адрес и комментарий
  - Гибрид add и upd
  - Всё что после # — комментарий
@@ -64,7 +64,7 @@ hosts set <host|mask> <addr> # <comment>
 hosts del <host|mask>
  - Удаляет конкретный хост или соответствующие маске
  - Алиасы: rem, rm, remove, delete, unset
- - Пример: hosts rem *.local
+ - Пример: hosts del *.local
 
 hosts enable <host|mask>
  - Включает конкретный хост или соответствующие маске
@@ -93,13 +93,13 @@ hosts format
 hosts clean
  - Удаляет комментарии и форматирует строки в файле
 
-hosts backup <name>
+hosts backup [name]
  - Делает резервную копию файла hosts
- - Параметр <name> не обязателен, по умолчанию он — backup
+ - Параметр [name] не обязателен, по умолчанию он — backup
 
-hosts restore <name>
+hosts restore [name]
  - Восстанавливает файл hosts из резервной копии
- - Параметр <name> не обязателен, по умолчанию он — backup
+ - Параметр [name] не обязателен, по умолчанию он — backup
 
 hosts rollback
  - Откатывает последнюю операцию с файлом hosts
