@@ -157,14 +157,14 @@ static class Program
 			{GetDescription()}
 
 			Usage:
-			    hosts [shell]   Run interactive shell.
-			    hosts <command> Execute a command.
+			    hosts [shell]       Run interactive shell.
+			    hosts <command>     Execute a command.
 
 			""");
 		Console.WriteLine("""
 			Commands:
-			    add  <host> [aliases] [ipv4] [ipv6] # [comment]  Add new host.
-			    set  <host|mask> [ipv4] [ipv6] # [comment]       Update host.
+			    add  <host> [aliases] [ipv4] [ipv6] # [comment]      Add new host.
+			    set  <host|mask> [ipv4] [ipv6] # [comment]           Update host.
 			    del  <host|mask>        Delete host.
 			    on   <host|mask>        Enable host.
 			    off  <host|mask>        Disable host.
@@ -389,7 +389,7 @@ static class Program
 		}
 		catch (NoWritePermissionException)
 		{
-			Console.WriteLine("[ERROR] No write permission to the hosts file.");
+			Console.WriteLine("[ERROR] No write permission to modify the hosts file.");
 			return false;
 		}
 		catch (HostNotSpecifiedException)
@@ -417,7 +417,7 @@ static class Program
 	{
 		bool? visible_only = true;
 		bool? enabled_only = true;
-		string mask = "*";
+		string mask = null;
 		var args_queue = new Queue<string>(args);
 
 		while (args_queue.Count > 0)
@@ -428,14 +428,18 @@ static class Program
 				visible_only = null;
 				enabled_only = null;
 			}
-			else if (mask == "*")
+			else if (mask == null)
 			{
 				mask = arg;
 				if (!mask.StartsWith("*") && !mask.EndsWith("*")) mask = '*' + mask + '*';
 			}
+			else
+			{
+				throw new Exception($"Unknown argument '{arg}'.");
+			}
 		}
 
-		View(mask, visible_only, enabled_only);
+		View(mask ?? "*", visible_only, enabled_only);
 	}
 
 	static void View(string mask, bool? visible_only = null, bool? enabled_only = null)
@@ -517,9 +521,15 @@ static class Program
 			if (address_test != null)
 			{
 				if (address_test.Type == NetAddressType.IPv4)
+				{
+					if (address_ipv4 != null) { throw new Exception("More than one IPv4 address is not allowed."); }
 					address_ipv4 = address_test;
+				}
 				else
+				{
+					if (address_ipv6 != null) { throw new Exception("More than one IPv6 address is not allowed."); }
 					address_ipv6 = address_test;
+				}
 				continue;
 			}
 			var hostname_test = HostName.TryCreate(arg);
@@ -528,7 +538,7 @@ static class Program
 				aliases.Add(hostname_test);
 				continue;
 			}
-			throw new Exception(String.Format("Unknown argument '{0}'.", arg));
+			throw new Exception($"Unknown argument '{arg}'.");
 		}
 
 		if (address_ipv4 == null && address_ipv6 == null)
@@ -583,9 +593,15 @@ static class Program
 			if (address_test != null)
 			{
 				if (address_test.Type == NetAddressType.IPv4)
+				{
+					if (address_ipv4 != null) { throw new Exception("More than one IPv4 address is not allowed."); }
 					address_ipv4 = address_test;
+				}
 				else
+				{
+					if (address_ipv6 != null) { throw new Exception("More than one IPv6 address is not allowed."); }
 					address_ipv6 = address_test;
+				}
 				continue;
 			}
 		}

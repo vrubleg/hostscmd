@@ -135,12 +135,12 @@ public class NetAddress
 					IP = NormalizeIPv6(ip);
 				break;
 
-				default: throw new Exception();
+				default: throw new Exception("Not IP address family.");
 			}
 		}
-		catch
+		catch (Exception e)
 		{
-			throw new FormatException(String.Format("Invalid IP address '{0}'.", IP));
+			throw new FormatException($"Invalid IP address '{IP}'.", e);
 		}
 	}
 
