@@ -296,7 +296,7 @@ static class Program
 				case "select":
 				case "ls":
 				case "show":
-					RunListMode(args_queue.ToList(), interactive);
+					RunListMode(args_queue.ToList());
 					return;
 
 				case "format":
@@ -429,15 +429,8 @@ static class Program
 		}
 	}
 
-	static void RunListMode(List<string> args, bool interactive)
+	static void RunListMode(List<string> args)
 	{
-		if (!interactive)
-		{
-			Console.WriteLine(GetTitle());
-			Console.WriteLine("Hosts file: " + Hosts.FileName.ToLower());
-			Console.WriteLine();
-		}
-
 		bool? visible_only = true;
 		bool? enabled_only = true;
 		string mask = "*";
