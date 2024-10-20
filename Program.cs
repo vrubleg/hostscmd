@@ -274,6 +274,9 @@ static class Program
 					return;
 
 				case "help":
+				case "--help":
+				case "-h":
+				case "/?":
 					Help(interactive);
 					return;
 			}
