@@ -30,15 +30,15 @@ hosts [shell]
  - В этом режиме все описанные ниже команды следует вводить без hosts
  - Для выхода можно использовать команды exit и quit
 
-hosts list [--all] <mask>
+hosts list [--all] [mask]
  - Без параметров отображает только включённые и не скрытые хосты
  - С флагом --all также отображает отключённые и скрытые
  - Алиасы: view, select, ls, show
  - Пример: list vk
  - Пример: list --all *.local
 
-hosts add <host> [aliases] [ip] # <comment>
- - Добавляет новый хост, [ip] по умолчанию 127.0.0.1
+hosts add <host> [aliases] [ipv4] [ipv6] # [comment]
+ - Добавляет новый хост, [ipv4] по умолчанию 127.0.0.1
  - Парамер [aliases] может отсутствовать
  - Параметры до # могут иметь произвольный порядок
  - Всё что после # — комментарий
@@ -46,15 +46,16 @@ hosts add <host> [aliases] [ip] # <comment>
  - Пример: hosts add myhost.dev www.myhost.dev
  - Пример: hosts add another.dev 192.168.1.1 # Remote host
  - Пример: hosts add домен.рф # IDN host demo
+ - Пример: hosts add example.com 127.0.0.1 ::1
 
-hosts upd <host|mask> [ip] # <comment>
+hosts upd <host|mask> [ipv4] [ipv6] # [comment]
  - Обновляет IP адрес и комментарий хоста
  - Всё что после # — комментарий
  - Алиасы: update, change
  - Пример: hosts upd myhost.dev # new comment
  - Пример: hosts upd another.dev 192.168.1.1
 
-hosts set <host|mask> [ip] # <comment>
+hosts set <host|mask> [ipv4] [ipv6] # [comment]
  - Добавляет хост или обновляет его IP адрес и комментарий
  - Гибрид add и upd
  - Всё что после # — комментарий

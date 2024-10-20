@@ -158,17 +158,17 @@ static class Program
 
 			Usage:
 			    hosts [shell]   Run interactive shell.
-			    hosts <cmd>     Execute a command.
+			    hosts <command> Execute a command.
 
 			""");
 		Console.WriteLine("""
 			Commands:
-			    add  <host> [aliases] [ip] # <comment>  Add new host.
-			    set  <host|mask> [ip] # <comment>       Update host.
+			    add  <host> [aliases] [ipv4] [ipv6] # [comment]  Add new host.
+			    set  <host|mask> [ipv4] [ipv6] # [comment]       Update host.
 			    del  <host|mask>        Delete host.
 			    on   <host|mask>        Enable host.
 			    off  <host|mask>        Disable host.
-			    list [--all] <mask>     Display active or all hosts.
+			    list [--all] [mask]     Display active or all hosts.
 			    hide <host|mask>        Hide host from 'list'.
 			    unhide <host|mask>      Unhide host.
 			    print       Display raw hosts file.

@@ -30,15 +30,15 @@ hosts [shell]
  - Enter other commands without "hosts" prefix in this mode
  - Use "exit" or "quit" to exit from this CLI
 
-hosts list [--all] <mask>
+hosts list [--all] [mask]
  - Displays enabled and not hidden hostnames by default
  - With "--all" flag, it displays disabled and hidden hosts also
  - Aliases: view, select, ls, show
  - Example: list vk
  - Example: list all *.local
 
-hosts add <host> [aliases] [ip] # <comment>
- - Adds a new hostname, [ip] is 127.0.0.1 by default
+hosts add <host> [aliases] [ipv4] [ipv6] # [comment]
+ - Adds a new hostname, [ipv4] is 127.0.0.1 by default
  - Argument [aliases] is not mandatory
  - All arguments before "#" can be in any order
  - Everything after "#" is a comment
@@ -46,15 +46,16 @@ hosts add <host> [aliases] [ip] # <comment>
  - Example: hosts add myhost.dev www.myhost.dev
  - Example: hosts add another.dev 192.168.1.1 # Remote host
  - Example: hosts add домен.рф # IDN host demo
+ - Example: hosts add example.com 127.0.0.1 ::1
 
-hosts upd <host|mask> [ip] # <comment>
+hosts upd <host|mask> [ipv4] [ipv6] # [comment]
  - Updates IP address and comment of a hostname
  - Everything after "#" is a comment
  - Aliases: update, change
  - Example: hosts upd myhost.dev # new comment
  - Example: hosts upd another.dev 192.168.1.1
 
-hosts set <host|mask> [ip] # <comment>
+hosts set <host|mask> [ipv4] [ipv6] # [comment]
  - Adds a new hostname or updates its IP address and comment
  - A mixture of "add" and "upd"
  - Everything after "#" is a comment
