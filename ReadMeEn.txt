@@ -61,9 +61,9 @@ hosts set <host|mask> <addr> # <comment>
  - Example: hosts set myhost.dev # new comment
  - Example: hosts set another.dev 192.168.1.1
 
-hosts rem <host|mask>
- - Removes hostnames
- - Aliases: rm, remove, del, delete, unset
+hosts del <host|mask>
+ - Deletes hostnames
+ - Aliases: rem, rm, remove, delete, unset
  - Example: hosts rem *.local
 
 hosts enable <host|mask>
@@ -104,9 +104,9 @@ hosts restore <name>
 hosts rollback
  - Rollbacks previous operation with hosts file
 
-hosts empty
+hosts reset
  - Replaces current hosts file with a new one with just one default host (localhost)
- - Aliases: recreate, erase
+ - Aliases: empty, recreate, erase
 
 hosts open
  - Opens hosts file in default text editor for *.txt files
@@ -117,8 +117,9 @@ hosts open
 ------------------------------------------------------------------------------------------------------------------------
 
 v1.6.x [202x/xx/xx]
- - Command "show" renamed to "unhide" to better reflect what it does.
+ - Command "show" is renamed to "unhide" to better reflect what it does.
  - Command "list" treats "show" as an alias.
+ - Command "empty" is renamed to "reset".
  - Optional argument "shell" to run the hosts interactive shell.
  - Execute as a 64-bit process on 64-bit Windows.
  - Other cosmetic changes.

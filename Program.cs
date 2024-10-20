@@ -177,7 +177,7 @@ static class Program
 			    rollback    Rollback last operation.
 			    backup      Backup hosts file.
 			    restore     Restore hosts file from backup.
-			    empty       Empty hosts file.
+			    reset       Reset hosts file (remove everything).
 			""");
 		if (!IsUnix) Console.WriteLine("""
 			    open       - open hosts file in notepad
@@ -264,6 +264,7 @@ static class Program
 					Console.WriteLine("[OK] Hosts file rolled back successfully.");
 					return;
 
+				case "reset":
 				case "empty":
 				case "recreate":
 				case "erase":

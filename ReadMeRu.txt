@@ -61,9 +61,9 @@ hosts set <host|mask> <addr> # <comment>
  - Пример: hosts set myhost.dev # new comment
  - Пример: hosts set another.dev 192.168.1.1
 
-hosts rem <host|mask>
+hosts del <host|mask>
  - Удаляет конкретный хост или соответствующие маске
- - Алиасы: rm, remove, del, delete, unset
+ - Алиасы: rem, rm, remove, delete, unset
  - Пример: hosts rem *.local
 
 hosts enable <host|mask>
@@ -104,9 +104,9 @@ hosts restore <name>
 hosts rollback
  - Откатывает последнюю операцию с файлом hosts
 
-hosts empty
+hosts reset
  - Создаёт новый hosts файл с одним хостом — localhost
- - Алиасы: recreate, erase
+ - Алиасы: empty, recreate, erase
 
 hosts open
  - Открывает файл hosts в текстовом редакторе, ассоциированным с *.txt
@@ -119,6 +119,7 @@ hosts open
 v1.6.x [202x/xx/xx]
  - Команда "show" переименована в в более понятное "unhide".
  - Команда "list" воспринимает "show" как алиас.
+ - Команда "empty" переименована в "reset".
  - Опциональный аргумент "shell" для запуска интерактивного командного интерпретатора.
  - На 64-разрядных Windows программа выполняется в 64-разрядном процессе.
  - Другие косметические изменения.
