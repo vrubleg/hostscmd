@@ -189,29 +189,6 @@ static class Program
 
 	static HostsEditor Hosts;
 
-	static void View(string mask, bool? visible_only = null, bool? enabled_only = null)
-	{
-		int enabled = 0;
-		int disabled = 0;
-		int hidden = 0;
-
-		if (mask != "*") Console.WriteLine("Mask: {0}\n", mask);
-
-		Hosts.RemoveInvalid();
-		Hosts.ResetFormat();
-		List<HostsItem> found_lines = Hosts.GetMatched(mask);
-		foreach (HostsItem line in found_lines)
-		{
-			if (line.Enabled) enabled++; else disabled++;
-			if (line.Hidden) hidden++;
-			if (visible_only != null && visible_only.Value == line.Hidden) continue;
-			if (enabled_only != null && enabled_only.Value != line.Enabled) continue;
-			Console.WriteLine(line);
-		}
-		if (found_lines.Count > 0) Console.WriteLine();
-		Console.WriteLine("Enabled: {0,-4} Disabled: {1,-4} Hidden: {2,-4}", enabled, disabled, hidden);
-	}
-
 	static bool Execute(List<string> args)
 	{
 		try
@@ -459,6 +436,29 @@ static class Program
 		}
 
 		View(mask, visible_only, enabled_only);
+	}
+
+	static void View(string mask, bool? visible_only = null, bool? enabled_only = null)
+	{
+		int enabled = 0;
+		int disabled = 0;
+		int hidden = 0;
+
+		if (mask != "*") Console.WriteLine("Mask: {0}\n", mask);
+
+		Hosts.RemoveInvalid();
+		Hosts.ResetFormat();
+		List<HostsItem> found_lines = Hosts.GetMatched(mask);
+		foreach (HostsItem line in found_lines)
+		{
+			if (line.Enabled) enabled++; else disabled++;
+			if (line.Hidden) hidden++;
+			if (visible_only != null && visible_only.Value == line.Hidden) continue;
+			if (enabled_only != null && enabled_only.Value != line.Enabled) continue;
+			Console.WriteLine(line);
+		}
+		if (found_lines.Count > 0) Console.WriteLine();
+		Console.WriteLine("Enabled: {0,-4} Disabled: {1,-4} Hidden: {2,-4}", enabled, disabled, hidden);
 	}
 
 	static void AddHostsItem(NetAddress address, HostAliases aliases, string comment)
