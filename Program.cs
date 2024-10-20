@@ -212,7 +212,7 @@ static class Program
 		Console.WriteLine("Enabled: {0,-4} Disabled: {1,-4} Hidden: {2,-4}", enabled, disabled, hidden);
 	}
 
-	static void Run(List<string> args)
+	static bool Execute(List<string> args)
 	{
 		try
 		{
@@ -228,7 +228,7 @@ static class Program
 					if (IsUnix) break;
 					var exe = FileAssoc.GetExecutable(".txt") ?? "notepad";
 					Process.Start(exe, '"' + hosts_file + '"');
-					return;
+					return true;
 
 				case "apply":
 					if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
@@ -238,14 +238,14 @@ static class Program
 					ForceCopy(hosts_file, rollback_file);
 					ForceCopy(apply_file, hosts_file);
 					Console.WriteLine("[OK] New hosts file applied successfully.");
-					return;
+					return true;
 
 				case "backup":
 					if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
 					if (args_queue.Count > 0) backup_file = hosts_file + "." + args_queue.Dequeue().ToLower();
 					ForceCopy(hosts_file, backup_file);
 					Console.WriteLine("[OK] Hosts file backed up successfully.");
-					return;
+					return true;
 
 				case "restore":
 					if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
@@ -254,7 +254,7 @@ static class Program
 					ForceCopy(hosts_file, rollback_file);
 					ForceCopy(backup_file, hosts_file);
 					Console.WriteLine("[OK] Hosts file restored successfully.");
-					return;
+					return true;
 
 				case "rollback":
 					if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
@@ -262,7 +262,7 @@ static class Program
 					if (File.Exists(hosts_file)) File.Delete(hosts_file);
 					File.Move(rollback_file, hosts_file);
 					Console.WriteLine("[OK] Hosts file rolled back successfully.");
-					return;
+					return true;
 
 				case "reset":
 				case "empty":
@@ -272,14 +272,14 @@ static class Program
 					ForceCopy(hosts_file, rollback_file);
 					File.WriteAllText(hosts_file, new HostsItem("127.0.0.1", "localhost").ToString());
 					Console.WriteLine("[OK] New hosts file created successfully.");
-					return;
+					return true;
 
 				case "help":
 				case "--help":
 				case "-h":
 				case "/?":
 					Help();
-					return;
+					return true;
 			}
 
 			Hosts.Load();
@@ -291,7 +291,7 @@ static class Program
 				case "raw":
 				case "file":
 					Console.WriteLine(File.ReadAllText(Hosts.FileName, Hosts.Encoding));
-					return;
+					return true;
 
 				case "list":
 				case "view":
@@ -299,7 +299,7 @@ static class Program
 				case "ls":
 				case "show":
 					RunListMode(args_queue.ToList());
-					return;
+					return true;
 
 				case "format":
 					if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
@@ -402,24 +402,28 @@ static class Program
 				default:
 					Console.WriteLine($"[ERROR] Unknown command '{mode}'.\n");
 					Help();
-					return;
+					return false;
 			}
 
 			MakeWritable(rollback_file);
 			ForceCopy(hosts_file, rollback_file);
 			Hosts.Save();
+			return true;
 		}
 		catch (NoWritePermissionException)
 		{
 			Console.WriteLine("[ERROR] No write permission to the hosts file.");
+			return false;
 		}
 		catch (HostNotSpecifiedException)
 		{
 			Console.WriteLine("[ERROR] Host not specified.");
+			return false;
 		}
 		catch (HostNotFoundException e)
 		{
 			Console.WriteLine("[ERROR] Host '{0}' not found.", e.Host);
+			return false;
 		}
 		catch (Exception e)
 		{
@@ -428,6 +432,7 @@ static class Program
 #else
 			Console.WriteLine("[ERROR] " + e.Message);
 #endif
+			return false;
 		}
 	}
 
@@ -650,7 +655,7 @@ static class Program
 		}
 	}
 
-	static void Main(string[] args)
+	static int Main(string[] args)
 	{
 		try
 		{
@@ -658,15 +663,16 @@ static class Program
 
 			if (args.Length > 0 && args[0].ToLower() != "shell")
 			{
-				Run(args.ToList());
+				return Execute(args.ToList()) ? 0 : 1;
 			}
 			else
 			{
-				IsShell = true;
 				Console.WriteLine(GetTitle());
 				Console.WriteLine(GetCopyright());
 				Console.WriteLine("Hosts file: " + Hosts.FileName.ToLower());
 				Console.WriteLine();
+
+				IsShell = true;
 				while (true)
 				{
 					Console.Write("hosts> ");
@@ -677,9 +683,11 @@ static class Program
 						command = command.Substring(6).TrimStart();
 					}
 					if (command == "exit" || command == "quit") break;
-					Run(command.Split(new char[] {' '}, StringSplitOptions.RemoveEmptyEntries).ToList());
+					Execute(command.Split(new char[] {' '}, StringSplitOptions.RemoveEmptyEntries).ToList());
 					Console.WriteLine();
 				}
+
+				return 0;
 			}
 		}
 		catch (Exception e)
@@ -689,7 +697,7 @@ static class Program
 #else
 			Console.WriteLine("[ERROR] " + e.Message);
 #endif
-			Console.ReadKey();
+			return 1;
 		}
 	}
 }

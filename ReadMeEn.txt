@@ -118,6 +118,7 @@ hosts open
 ------------------------------------------------------------------------------------------------------------------------
 
 v1.6.x [202x/xx/xx]
+ - A non-zero error code is returned if an error occurs.
  - Command "show" is renamed to "unhide" to better reflect what it does.
  - Command "list" treats "show" as an alias.
  - Command "empty" is renamed to "reset".
