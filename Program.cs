@@ -156,14 +156,14 @@ static class Program
 			{GetDescription()}
 
 			Usage:
-			  hosts                                      - run hosts command interpreter
-			  hosts <command> <params>                   - execute hosts command
+			  hosts [shell]     - run interactive shell
+			  hosts <command>   - execute a command
+
 			""");
 		Console.WriteLine("""
-
 			Commands:
-			  add  <host> <aliases> <addr> # <comment>   - add new host
-			  set  <host|mask> <addr> # <comment>        - set ip and comment for host
+			  add  <host> [aliases] [ip] # <comment>   - add new host
+			  set  <host|mask> [ip] # <comment>        - set ip and comment for host
 			  rem  <host|mask>       - remove host
 			  on   <host|mask>       - enable host
 			  off  <host|mask>       - disable host
@@ -182,7 +182,7 @@ static class Program
 			  open       - open hosts file in notepad
 			""");
 		if (interactive) Console.WriteLine("""
-			  exit       - exit from command interpreter
+			  exit       - exit from the shell
 			""");
 	}
 
@@ -398,7 +398,7 @@ static class Program
 					break;
 
 				default:
-					Console.WriteLine("[ERROR] Unknown command.\n");
+					Console.WriteLine($"[ERROR] Unknown command '{mode}'.");
 					Help(interactive);
 					return;
 			}
@@ -661,7 +661,7 @@ static class Program
 		{
 			Init();
 
-			if (args.Length > 0)
+			if (args.Length > 0 && args[0].ToLower() != "shell")
 			{
 				Run(args.ToList(), false);
 			}

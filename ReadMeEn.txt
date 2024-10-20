@@ -25,7 +25,7 @@ On Windows, copy the hosts.exe to your system directory (c:\windows\system32\), 
 
 On Linux or MacOS, you should use Mono (2.8+). Execution of the program using mono looks like this: mono hosts.exe command param1 param2. As a convenience, you can create alias hosts="mono hosts.exe", so you will be able to run Hosts Commander as easy as on Windows. Unlike Windows, the program doesn't require superuser rights to view contents of the hosts file.
 
-hosts
+hosts [shell]
  - Runs CLI for close work with hosts
  - Enter other commands without "hosts" prefix in this mode
  - Use "exit" or "quit" to exit from this CLI
@@ -119,6 +119,7 @@ hosts open
 v1.6.x [202x/xx/xx]
  - Command "show" renamed to "unhide" to better reflect what it does.
  - Command "list" treats "show" as an alias.
+ - Optional argument "shell" to run the hosts interactive shell.
  - Execute as a 64-bit process on 64-bit Windows.
  - Other cosmetic changes.
 
