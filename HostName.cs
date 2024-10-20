@@ -35,7 +35,7 @@ public class HostName
 		}
 		catch (Exception e)
 		{
-			throw new FormatException(String.Format("Invalid host '{0}'", host), e);
+			throw new FormatException(String.Format("Invalid host '{0}'.", host), e);
 		}
 	}
 

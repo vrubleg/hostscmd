@@ -154,6 +154,8 @@ static class Program
 			Console.WriteLine(GetTitle());
 			Console.WriteLine(GetCopyright());
 			Console.WriteLine();
+			Console.WriteLine(GetDescription());
+			Console.WriteLine();
 			Console.WriteLine("Usage:");
 			Console.WriteLine("  hosts - run hosts command interpreter");
 			Console.WriteLine("  hosts <command> <params> - execute hosts command");
@@ -183,8 +185,6 @@ static class Program
 		{
 			Console.WriteLine("  exit       - exit from command interpreter");
 		}
-		Console.WriteLine();
-		Console.WriteLine("Details:\n  " + GetDescription());
 	}
 
 	static HostsEditor Hosts;
@@ -232,19 +232,19 @@ static class Program
 
 				case "apply":
 					if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
-					if (args_queue.Count == 0) throw new Exception("Applied file is not specified");
+					if (args_queue.Count == 0) throw new Exception("Applied file is not specified.");
 					var apply_file = args_queue.Dequeue();
-					if (!File.Exists(apply_file)) throw new Exception("Applied file does not exist");
+					if (!File.Exists(apply_file)) throw new Exception("Applied file does not exist.");
 					ForceCopy(hosts_file, rollback_file);
 					ForceCopy(apply_file, hosts_file);
-					Console.WriteLine("[OK] New hosts file applied successfully");
+					Console.WriteLine("[OK] New hosts file applied successfully.");
 					return;
 
 				case "backup":
 					if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
 					if (args_queue.Count > 0) backup_file = hosts_file + "." + args_queue.Dequeue().ToLower();
 					ForceCopy(hosts_file, backup_file);
-					Console.WriteLine("[OK] Hosts file backed up successfully");
+					Console.WriteLine("[OK] Hosts file backed up successfully.");
 					return;
 
 				case "restore":
@@ -253,7 +253,7 @@ static class Program
 					if (!File.Exists(backup_file)) throw new Exception("Backup file does not exist");
 					ForceCopy(hosts_file, rollback_file);
 					ForceCopy(backup_file, hosts_file);
-					Console.WriteLine("[OK] Hosts file restored successfully");
+					Console.WriteLine("[OK] Hosts file restored successfully.");
 					return;
 
 				case "rollback":
@@ -261,7 +261,7 @@ static class Program
 					if (!File.Exists(rollback_file)) throw new Exception("Rollback file does not exist");
 					if (File.Exists(hosts_file)) File.Delete(hosts_file);
 					File.Move(rollback_file, hosts_file);
-					Console.WriteLine("[OK] Hosts file rolled back successfully");
+					Console.WriteLine("[OK] Hosts file rolled back successfully.");
 					return;
 
 				case "empty":
@@ -270,7 +270,7 @@ static class Program
 					if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
 					ForceCopy(hosts_file, rollback_file);
 					File.WriteAllText(hosts_file, new HostsItem("127.0.0.1", "localhost").ToString());
-					Console.WriteLine("[OK] New hosts file created successfully");
+					Console.WriteLine("[OK] New hosts file created successfully.");
 					return;
 
 				case "help":
@@ -299,14 +299,14 @@ static class Program
 				case "format":
 					if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
 					Hosts.ResetFormat();
-					Console.WriteLine("[OK] Hosts file formatted successfully");
+					Console.WriteLine("[OK] Hosts file formatted successfully.");
 					break;
 
 				case "clean":
 					if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
 					Hosts.RemoveInvalid();
 					Hosts.ResetFormat();
-					Console.WriteLine("[OK] Hosts file cleaned successfully");
+					Console.WriteLine("[OK] Hosts file cleaned successfully.");
 					break;
 
 				case "add":
@@ -395,7 +395,7 @@ static class Program
 					break;
 
 				default:
-					Console.WriteLine("[ERROR] Unknown command");
+					Console.WriteLine("[ERROR] Unknown command.\n");
 					Help(interactive);
 					return;
 			}
@@ -405,15 +405,15 @@ static class Program
 		}
 		catch (NoWritePermissionException)
 		{
-			Console.WriteLine("[ERROR] No write permission to the hosts file");
+			Console.WriteLine("[ERROR] No write permission to the hosts file.");
 		}
 		catch (HostNotSpecifiedException)
 		{
-			Console.WriteLine("[ERROR] Host not specified");
+			Console.WriteLine("[ERROR] Host not specified.");
 		}
 		catch (HostNotFoundException e)
 		{
-			Console.WriteLine("[ERROR] Host '{0}' not found", e.Host);
+			Console.WriteLine("[ERROR] Host '{0}' not found.", e.Host);
 		}
 		catch (Exception e)
 		{
@@ -524,7 +524,7 @@ static class Program
 				aliases.Add(hostname_test);
 				continue;
 			}
-			throw new Exception(String.Format("Unknown argument '{0}'", arg));
+			throw new Exception(String.Format("Unknown argument '{0}'.", arg));
 		}
 
 		if (address_ipv4 == null && address_ipv6 == null)
@@ -647,7 +647,7 @@ static class Program
 		}
 		catch
 		{
-			throw new Exception("hosts file does not exist");
+			throw new Exception("The hosts file does not exist.");
 		}
 	}
 

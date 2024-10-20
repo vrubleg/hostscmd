@@ -116,6 +116,10 @@ hosts open
   Changelog
 ------------------------------------------------------------------------------------------------------------------------
 
+v1.6.x [202x/xx/xx]
+ - Execute as a 64-bit process on 64-bit Windows.
+ - Cosmetic changes.
+
 v1.6.2 [2020/11/21]
  - Fixed an error which may cause a freeze on a malformed hosts file.
  - The "list" command uses "--all" as an argument instead of "all", and it can be before and after mask.

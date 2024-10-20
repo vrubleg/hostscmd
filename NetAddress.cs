@@ -140,7 +140,7 @@ public class NetAddress
 		}
 		catch
 		{
-			throw new FormatException(String.Format("Invalid IP address '{0}'", IP));
+			throw new FormatException(String.Format("Invalid IP address '{0}'.", IP));
 		}
 	}
 

@@ -7,7 +7,7 @@
 		<Product>$(Title)</Product>
 		<Company>Vegalogic Software</Company>
 		<Copyright>(C) 2010-2020 Evgeny Vrublevsky &lt;me@veg.by&gt;</Copyright>
-		<Description>Command line hosts file editor</Description>
+		<Description>Command line hosts file editor.</Description>
 		<!-- Don't add git commit into product version -->
 		<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
 		<!-- Compiler settings -->
