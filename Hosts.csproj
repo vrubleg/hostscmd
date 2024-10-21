@@ -17,21 +17,27 @@
 		<LangVersion>12.0</LangVersion>
 		<ImplicitUsings>disable</ImplicitUsings>
 		<Nullable>disable</Nullable>
+		<!-- Allow timestamp in PE headers -->
+		<Deterministic>false</Deterministic>
+		<!-- Win32 manifest to require admin elevation -->
 		<ApplicationManifest>Hosts.manifest</ApplicationManifest>
 		<!-- Ignore all files and directories with ~ in their name -->
 		<DefaultItemExcludes>$(DefaultItemExcludes);**/*~*;**/*~*/**</DefaultItemExcludes>
+		<!-- Always rebuild project when asked to build it -->
+		<DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
 		<!-- Output everything into bin without subdirectories -->
 		<OutputPath>bin\</OutputPath>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-		<!-- Always rebuild project when asked to build it -->
-		<DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
-		<!-- Allow timestamp in PE headers -->
-		<Deterministic>false</Deterministic>
-		<!-- No debug info in release configuration -->
-		<DebugType Condition="'$(Configuration)'=='Release'">none</DebugType>
-		<SkipCopyingSymbolsToOutputDirectory>true</SkipCopyingSymbolsToOutputDirectory>
 		<!-- Don't create app.config -->
 		<AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
 		<GenerateSupportedRuntime>false</GenerateSupportedRuntime>
+		<!-- No debug info in release configuration -->
+		<DebugType Condition="'$(Configuration)'=='Release'">none</DebugType>
+		<CopyOutputSymbolsToOutputDirectory>false</CopyOutputSymbolsToOutputDirectory>
+		<CopyOutputSymbolsToPublishDirectory>false</CopyOutputSymbolsToPublishDirectory>
+		<!-- Publish settings -->
+		<IsPublishable>true</IsPublishable>
+		<PublishRelease>true</PublishRelease>
+		<PublishDir>$(OutputPath)pub\</PublishDir>
 	</PropertyGroup>
 </Project>
