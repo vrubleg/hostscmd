@@ -11,12 +11,33 @@ using System.Security;
 
 namespace Hosts;
 
-class NoWritePermissionException : ApplicationException { }
-class HostNotSpecifiedException : ApplicationException { }
+class NoWritePermissionException : ApplicationException
+{
+	public override string Message => "No write permission to modify the hosts file.";
+}
+
+class HostNotSpecifiedException : ApplicationException
+{
+	public override string Message => "Host is not specified.";
+}
+
 class HostNotFoundException : ApplicationException 
 {
 	public string Host { get; protected set; }
-	public HostNotFoundException(string host) { Host = host; }
+	public NetAddressType IpType { get; protected set; }
+
+	public HostNotFoundException(string host, NetAddressType ip_type = NetAddressType.None)
+	{
+		Host = host;
+		IpType = ip_type;
+	}
+
+	public override string Message => IpType switch
+	{
+		NetAddressType.IPv4 => $"Host '{Host}' is not found for IPv4.",
+		NetAddressType.IPv6 => $"Host '{Host}' is not found for IPv6.",
+		_ => $"Host '{Host}' is not found.",
+	};
 }
 
 static class Program
@@ -387,21 +408,6 @@ static class Program
 			Hosts.Save();
 			return true;
 		}
-		catch (NoWritePermissionException)
-		{
-			Console.WriteLine("[ERROR] No write permission to modify the hosts file.");
-			return false;
-		}
-		catch (HostNotSpecifiedException)
-		{
-			Console.WriteLine("[ERROR] Host is not specified.");
-			return false;
-		}
-		catch (HostNotFoundException e)
-		{
-			Console.WriteLine("[ERROR] Host '{0}' is not found.", e.Host);
-			return false;
-		}
 		catch (Exception e)
 		{
 #if DEBUG
@@ -507,13 +513,14 @@ static class Program
 			string arg = args_queue.Dequeue();
 			if (in_comment)
 			{
-				comment += arg + " ";
+				if (comment.Length > 0) { comment += " "; }
+				comment += arg;
 				continue;
 			}
 			if (arg.Length > 0 && arg[0] == '#')
 			{
 				in_comment = true;
-				comment = (arg.Length > 1) ? (arg.Substring(1) + " ") : "";
+				comment = (arg.Length > 1) ? arg.Substring(1) : "";
 				continue;
 			}
 			arg = arg.ToLower();
@@ -563,12 +570,6 @@ static class Program
 
 		var args_queue = new Queue<string>(args);
 		string mask = args_queue.Dequeue();
-		List<HostsItem> lines = Hosts.GetMatched(mask);
-		if (lines.Count == 0 && (!autoadd || mask.IndexOf('*') != -1))
-		{
-			throw new HostNotFoundException(mask);
-		}
-
 		NetAddress address_ipv4 = null;
 		NetAddress address_ipv6 = null;
 		string comment = null;
@@ -579,13 +580,14 @@ static class Program
 			string arg = args_queue.Dequeue();
 			if (in_comment)
 			{
-				comment += arg + " ";
+				if (comment.Length > 0) { comment += " "; }
+				comment += arg;
 				continue;
 			}
 			if (arg.Length > 0 && arg[0] == '#')
 			{
 				in_comment = true;
-				comment = (arg.Length > 1) ? (arg.Substring(1) + " ") : "";
+				comment = (arg.Length > 1) ? arg.Substring(1) : "";
 				continue;
 			}
 			arg = arg.ToLower();
@@ -603,6 +605,26 @@ static class Program
 					address_ipv6 = address_test;
 				}
 				continue;
+			}
+			throw new Exception($"Unknown argument '{arg}'.");
+		}
+
+		if (address_ipv4 == null && address_ipv6 == null && comment == null)
+		{
+			throw new Exception("Not enough arguments.");
+		}
+
+		List<HostsItem> lines = Hosts.GetMatched(mask);
+		if (!autoadd || mask.IndexOf('*') != -1)
+		{
+			if (lines.Count == 0) { throw new HostNotFoundException(mask); }
+			if (address_ipv4 != null && !lines.Any(item => item.IP.Type == NetAddressType.IPv4))
+			{
+				throw new HostNotFoundException(mask, NetAddressType.IPv4);
+			}
+			if (address_ipv6 != null && !lines.Any(item => item.IP.Type == NetAddressType.IPv6))
+			{
+				throw new HostNotFoundException(mask, NetAddressType.IPv6);
 			}
 		}
 
@@ -634,12 +656,12 @@ static class Program
 			}
 		}
 
-		if (address_ipv4 != null && !ipv4_added && autoadd)
+		if (autoadd && address_ipv4 != null && !ipv4_added)
 		{
 			AddHostsItem(address_ipv4, new HostAliases(mask), comment);
 		}
 
-		if (address_ipv6 != null && !ipv6_added && autoadd)
+		if (autoadd && address_ipv6 != null && !ipv6_added)
 		{
 			AddHostsItem(address_ipv6, new HostAliases(mask), comment);
 		}
