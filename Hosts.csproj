@@ -34,10 +34,5 @@
 		<!-- No debug info in release configuration -->
 		<DebugType Condition="'$(Configuration)'=='Release'">none</DebugType>
 		<CopyOutputSymbolsToOutputDirectory>false</CopyOutputSymbolsToOutputDirectory>
-		<CopyOutputSymbolsToPublishDirectory>false</CopyOutputSymbolsToPublishDirectory>
-		<!-- Publish settings -->
-		<IsPublishable>true</IsPublishable>
-		<PublishRelease>true</PublishRelease>
-		<PublishDir>$(OutputPath)pub\</PublishDir>
 	</PropertyGroup>
 </Project>
