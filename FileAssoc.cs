@@ -41,12 +41,18 @@ internal static class FileAssoc
 
 	public static string GetExecutable(string doctype)
 	{
-		uint cOut = 0;
-		if (AssocQueryString(AssocF.Verify, AssocStr.Executable, doctype, null, null, ref cOut) != 1)
+		uint out_path_size = 0;
+		if (AssocQueryString(AssocF.Verify, AssocStr.Executable, doctype, null, null, ref out_path_size) != 1)
+		{
 			return null;
-		StringBuilder pOut = new StringBuilder((int)cOut);
-		if (AssocQueryString(AssocF.Verify, AssocStr.Executable, doctype, null, pOut, ref cOut) != 0)
+		}
+
+		StringBuilder out_path = new StringBuilder((int)out_path_size);
+		if (AssocQueryString(AssocF.Verify, AssocStr.Executable, doctype, null, out_path, ref out_path_size) != 0)
+		{
 			return null;
-		return pOut.ToString();
+		}
+
+		return out_path.ToString();
 	}
 }

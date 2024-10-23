@@ -18,7 +18,7 @@ public class HostsItem
 	public HostAliases Aliases { get; set; }
 	public string Comment { get; set; }
 	public bool ResetFormat { get; set; }
-	public bool Deleted { get { return Valid && (Aliases == null || Aliases.Count == 0); } }
+	public bool Deleted => Valid && (Aliases == null || Aliases.Count == 0);
 
 	public string RawString
 	{
