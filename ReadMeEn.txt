@@ -1,5 +1,5 @@
-Hosts Commander v1.6.2 [2020/11/21]
-(С) 2010-2020 Evgeny Vrublevsky <me@veg.by>
+Hosts Commander v1.6.3 [2024/xx/xx]
+(С) 2010-2024 Evgeny Vrublevsky <me@veg.by>
 http://veg.by/en/projects/hostscmd/
 
 Command line hosts file editor.
@@ -21,7 +21,7 @@ Features:
   How to use it?
 ------------------------------------------------------------------------------------------------------------------------
 
-On Windows, copy the hosts.exe to your system directory (c:\windows\system32\), so the tool will be always available from command prompt or from the Win+R dialog. To work on Windows XP or 7, it is required to install .NET Framework 4 (it is preinstalled on Windows 8 and 10). On Windows 7+, don't forget to run hosts.exe from a Command Prompt with administrator rights if you want to see the result of execution (otherwise it appears in an external window, and then just disappears). To open a Command Prompt with administrator rights, press Win, then type "cmd", and then press Ctrl+Shift+Enter.
+On Windows, copy the hosts.exe to c:\windows\, so the tool will be always available from command prompt or from the Win+R dialog. To work on Windows XP or 7, it is required to install .NET Framework 4 (it is preinstalled on Windows 8 and 10). On Windows 7+, don't forget to run hosts.exe from a Command Prompt with administrator rights if you want to see the result of execution (otherwise it appears in an external window, and then just disappears). To open a Command Prompt with administrator rights, press Win, then type "cmd", and then press Ctrl+Shift+Enter.
 
 On Linux or MacOS, you should use Mono (2.8+). Execution of the program using mono looks like this: mono hosts.exe command param1 param2. As a convenience, you can create alias hosts="mono hosts.exe", so you will be able to run Hosts Commander as easy as on Windows. Unlike Windows, the program doesn't require superuser rights to view contents of the hosts file.
 
@@ -117,7 +117,7 @@ hosts open
   Changelog
 ------------------------------------------------------------------------------------------------------------------------
 
-v1.6.x [202x/xx/xx]
+v1.6.3 [2024/xx/xx]
  - A non-zero error code is returned if an error occurs.
  - Command "show" is renamed to "unhide" to better reflect what it does.
  - Command "list" treats "show" as an alias.

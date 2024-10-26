@@ -160,7 +160,7 @@ static class Program
 	static string GetCopyright()
 	{
 		var attr = GetAssemblyAttribute<AssemblyCopyrightAttribute>();
-		return (attr == null) ? String.Empty : attr.Copyright;
+		return (attr == null) ? String.Empty : ("(C) " + attr.Copyright);
 	}
 
 	static string GetDescription()

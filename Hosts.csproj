@@ -2,11 +2,11 @@
 	<PropertyGroup>
 		<!-- Assembly metadata -->
 		<Title>Hosts Commander</Title>
-		<Version>1.6.2.0</Version>
+		<Version>1.6.3.0</Version>
 		<AssemblyTitle>$(Title)</AssemblyTitle>
 		<Product>$(Title)</Product>
 		<Company>Vegalogic Software</Company>
-		<Copyright>(C) 2010-2020 Evgeny Vrublevsky &lt;me@veg.by&gt;</Copyright>
+		<Copyright>2010-2024 Evgeny Vrublevsky &lt;me@veg.by&gt;</Copyright>
 		<Description>Command line hosts file editor.</Description>
 		<!-- Don't add git commit into product version -->
 		<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
