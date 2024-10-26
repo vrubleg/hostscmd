@@ -14,9 +14,10 @@ public class HostName
 	public string Unicode { get; protected set; }
 	public bool Idn { get; protected set; }
 
-	public HostName(string host, bool idn = true)
+	public HostName(string host)
 	{
-		if (host == null) throw new ArgumentNullException();
+		if (host == null) { throw new ArgumentNullException(); }
+
 		try
 		{
 			host = host.ToLower();
@@ -31,7 +32,7 @@ public class HostName
 				Ascii = IdnMapping.GetAscii(host);
 				Unicode = IdnMapping.GetUnicode(Ascii);
 			}
-			Idn = idn && Ascii != Unicode;
+			Idn = Ascii != Unicode;
 		}
 		catch (Exception e)
 		{
@@ -39,9 +40,9 @@ public class HostName
 		}
 	}
 
-	public static HostName TryCreate(string host, bool idn = true)
+	public static HostName TryCreate(string host)
 	{
-		try	{ return new HostName(host, idn); }
+		try	{ return new HostName(host); }
 		catch { return null; }
 	}
 
@@ -60,6 +61,11 @@ public class HostName
 		return Idn ? Unicode : Ascii;
 	}
 
+	public string ToString(bool idn)
+	{
+		return idn ? Unicode : Ascii;
+	}
+
 	public override int GetHashCode()
 	{
 		return ToString().GetHashCode();
@@ -67,7 +73,7 @@ public class HostName
 
 	public bool Equals(HostName host)
 	{
-		if ((object)host == null) return false;
+		if ((object)host == null) { return false; }
 		return host.Unicode == this.Unicode;
 	}
 
@@ -78,9 +84,9 @@ public class HostName
 
 	public override bool Equals(object obj)
 	{
-		if (obj == null) return false;
-		if (obj is string) return Equals((string)obj);
-		if (obj is HostName) return Equals((HostName)obj);
+		if (obj == null) { return false; }
+		if (obj is string) { return Equals((string)obj); }
+		if (obj is HostName) { return Equals((HostName)obj); }
 		return false;
 	}
 
