@@ -123,7 +123,8 @@ v1.6.3 [2024/xx/xx]
  - Command "list" treats "show" as an alias.
  - Command "empty" is renamed to "reset".
  - Optional argument "shell" to run the hosts interactive shell.
- - Execute as a 64-bit process on 64-bit Windows.
+ - Host arguments ignore mistakenly passed http:// protocol prefix.
+ - Execute as a 64-bit process on 64-bit Windows (AMD64 and ARM64).
  - Other cosmetic changes.
 
 v1.6.2 [2020/11/21]

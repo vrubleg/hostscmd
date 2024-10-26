@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Diagnostics;
 using System.Security.Permissions;
 using System.Security;
+using System.Text.RegularExpressions;
 
 namespace Hosts;
 
@@ -208,6 +209,12 @@ static class Program
 			""");
 	}
 
+	static string LaxHostArg(string host)
+	{
+		// Let's be a bit less punishing and strip HTTP protocol.
+		return Regex.Replace(host, @"^https?://([^/]+)/?$", "$1", RegexOptions.IgnoreCase);
+	}
+
 	static HostsEditor Hosts;
 
 	static bool Execute(List<string> args)
@@ -338,7 +345,7 @@ static class Program
 				case "unset":
 					if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
 					if (args_queue.Count == 0) throw new HostNotSpecifiedException();
-					Lines = Hosts.GetMatched(args[1]);
+					Lines = Hosts.GetMatched(LaxHostArg(args[1]));
 					if (Lines.Count == 0) throw new HostNotFoundException(args[1]);
 					foreach (HostsItem Line in Lines)
 					{
@@ -351,7 +358,7 @@ static class Program
 				case "enable":
 					if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
 					if (args_queue.Count == 0) throw new HostNotSpecifiedException();
-					Lines = Hosts.GetMatched(args[1]);
+					Lines = Hosts.GetMatched(LaxHostArg(args[1]));
 					if (Lines.Count == 0) throw new HostNotFoundException(args[1]);
 					foreach (HostsItem Line in Lines)
 					{
@@ -364,7 +371,7 @@ static class Program
 				case "disable":
 					if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
 					if (args_queue.Count == 0) throw new HostNotSpecifiedException();
-					Lines = Hosts.GetMatched(args[1]);
+					Lines = Hosts.GetMatched(LaxHostArg(args[1]));
 					if (Lines.Count == 0) throw new HostNotFoundException(args[1]);
 					foreach (HostsItem Line in Lines)
 					{
@@ -376,7 +383,7 @@ static class Program
 				case "hide":
 					if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
 					if (args_queue.Count == 0) throw new HostNotSpecifiedException();
-					Lines = Hosts.GetMatched(args[1]);
+					Lines = Hosts.GetMatched(LaxHostArg(args[1]));
 					if (Lines.Count == 0) throw new HostNotFoundException(args[1]);
 					foreach (HostsItem Line in Lines)
 					{
@@ -388,7 +395,7 @@ static class Program
 				case "unhide":
 					if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
 					if (args_queue.Count == 0) throw new HostNotSpecifiedException();
-					Lines = Hosts.GetMatched(args[1]);
+					Lines = Hosts.GetMatched(LaxHostArg(args[1]));
 					if (Lines.Count == 0) throw new HostNotFoundException(args[1]);
 					foreach (HostsItem Line in Lines)
 					{
@@ -436,8 +443,11 @@ static class Program
 			}
 			else if (mask == null)
 			{
-				mask = arg;
-				if (!mask.StartsWith("*") && !mask.EndsWith("*")) mask = '*' + mask + '*';
+				mask = LaxHostArg(arg);
+				if (!mask.StartsWith("*") && !mask.EndsWith("*"))
+				{
+					mask = '*' + mask + '*';
+				}
 			}
 			else
 			{
@@ -539,7 +549,7 @@ static class Program
 				}
 				continue;
 			}
-			var hostname_test = HostName.TryCreate(arg);
+			var hostname_test = HostName.TryCreate(LaxHostArg(arg));
 			if (hostname_test != null)
 			{
 				aliases.Add(hostname_test);
@@ -569,7 +579,7 @@ static class Program
 		if (args.Count == 0) throw new HostNotSpecifiedException();
 
 		var args_queue = new Queue<string>(args);
-		string mask = args_queue.Dequeue();
+		string mask = LaxHostArg(args_queue.Dequeue());
 		NetAddress address_ipv4 = null;
 		NetAddress address_ipv6 = null;
 		string comment = null;
