@@ -94,89 +94,13 @@ static class Program
 		File.Copy(src, dst, true);
 	}
 
-	static T GetAssemblyAttribute<T>()
-	{
-		object[] attributes = Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(T), false);
-		return (attributes.Length == 0) ? default(T) : (T)attributes[0];
-	}
-
-	static string GetTitle()
-	{
-		var attr = GetAssemblyAttribute<AssemblyTitleAttribute>();
-		if (attr == null) return String.Empty;
-		var title = attr.Title;
-
-		var version = GetVersion();
-		if (version != null)
-		{
-			title += " v" + version;
-		}
-
-#if DEBUG
-		title += " DEBUG";
-#endif
-
-		var date = GetBuildDate();
-		if (date != DateTime.MinValue)
-		{
-			// For some reason, it replaces "yyyy/MM/dd" by a locale specific date format
-			// So, we use "-" as a delimiter and replace it to "/"
-			title += date.ToString(" [yyyy-MM-dd]").Replace('-', '/');
-		}
-
-		return title;
-	}
-
-	static string GetVersion()
-	{
-		var attr = GetAssemblyAttribute<AssemblyFileVersionAttribute>();
-		if (attr == null) return null;
-
-		var parts = new List<string>(attr.Version.TrimEnd('0', '.').Split('.'));
-		if (parts.Count == 0) return null;
-		while (parts.Count < 3)
-		{
-			parts.Add("0");
-		}
-
-		return String.Join(".", parts.ToArray());
-	}
-
-	static DateTime GetBuildDate()
-	{
-		try
-		{
-			// Read it from the PE header
-			var buffer = File.ReadAllBytes(Assembly.GetExecutingAssembly().Location);
-			var pe = BitConverter.ToInt32(buffer, 0x3C);
-			var time = BitConverter.ToInt32(buffer, pe + 8);
-			return (new DateTime(1970, 1, 1, 0, 0, 0, 0)).AddSeconds(time);
-		}
-		catch
-		{
-			return DateTime.MinValue;
-		}
-	}
-
-	static string GetCopyright()
-	{
-		var attr = GetAssemblyAttribute<AssemblyCopyrightAttribute>();
-		return (attr == null) ? String.Empty : ("(C) " + attr.Copyright);
-	}
-
-	static string GetDescription()
-	{
-		var attr = GetAssemblyAttribute<AssemblyDescriptionAttribute>();
-		return (attr == null) ? String.Empty : attr.Description;
-	}
-
 	static void Help()
 	{
 		if (!IsShell) Console.WriteLine($"""
-			{GetTitle()}
-			{GetCopyright()}
+			{ProgramMeta.GetTitle()}
+			{ProgramMeta.GetCopyright()}
 
-			{GetDescription()}
+			{ProgramMeta.GetDescription()}
 
 			Usage:
 			    hosts [shell]       Run interactive shell.
@@ -715,8 +639,8 @@ static class Program
 			}
 			else
 			{
-				Console.WriteLine(GetTitle());
-				Console.WriteLine(GetCopyright());
+				Console.WriteLine(ProgramMeta.GetTitle());
+				Console.WriteLine(ProgramMeta.GetCopyright());
 				Console.WriteLine("Hosts file: " + Hosts.FileName.ToLower());
 				Console.WriteLine();
 
