@@ -12,11 +12,14 @@
 		<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
 		<!-- Compiler settings -->
 		<OutputType>Exe</OutputType>
-		<PlatformTarget>AnyCPU</PlatformTarget>
 		<TargetFramework>net40</TargetFramework>
 		<LangVersion>12.0</LangVersion>
 		<ImplicitUsings>disable</ImplicitUsings>
 		<Nullable>disable</Nullable>
+		<!-- Run as a native process on all platforms -->
+		<PlatformTarget>AnyCPU</PlatformTarget>
+		<Prefer32Bit>false</Prefer32Bit>
+		<PreferNativeArm64>true</PreferNativeArm64>
 		<!-- Allow timestamp in PE headers -->
 		<Deterministic>false</Deterministic>
 		<!-- Win32 manifest to require admin elevation -->
