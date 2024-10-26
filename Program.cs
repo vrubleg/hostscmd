@@ -652,13 +652,15 @@ static class Program
 				while (true)
 				{
 					Console.Write("hosts> ");
-					var command = (Console.ReadLine() ?? "").Replace("\0", "").Trim();
-					if (command == "") continue;
-					if (command.StartsWith("hosts "))
+					var command = Console.ReadLine();
+					if (command == null) { break; } // Ctrl+C or Ctrl+Break?
+					command = command.Replace("\0", "").Trim(); // A workaround for an ancient Mono bug.
+					if (command == "") { continue; }
+					if (command.StartsWith("hosts ", StringComparison.OrdinalIgnoreCase))
 					{
 						command = command.Substring(6).TrimStart();
 					}
-					if (command == "exit" || command == "quit") break;
+					if (command.ToLower() is "exit" or "quit") { break; }
 					Execute(command.Split(new char[] {' '}, StringSplitOptions.RemoveEmptyEntries).ToList());
 					Console.WriteLine();
 				}
