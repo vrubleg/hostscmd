@@ -1,4 +1,4 @@
-Hosts Commander v1.6.3 [2024/xx/xx]
+Hosts Commander v1.6.3 [2024/10/26]
 (С) 2010-2024 Evgeny Vrublevsky <me@veg.by>
 http://veg.by/en/projects/hostscmd/
 
@@ -117,7 +117,7 @@ hosts open
   Changelog
 ------------------------------------------------------------------------------------------------------------------------
 
-v1.6.3 [2024/xx/xx]
+v1.6.3 [2024/10/26]
  - A non-zero error code is returned if an error occurs.
  - Command "show" is renamed to "unhide" to better reflect what it does.
  - Command "list" treats "show" as an alias.
