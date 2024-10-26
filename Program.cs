@@ -99,6 +99,7 @@ static class Program
 		if (!IsShell) Console.WriteLine($"""
 			{ProgramMeta.GetTitle()}
 			{ProgramMeta.GetCopyright()}
+			https://veg.by/projects/hostscmd/
 
 			{ProgramMeta.GetDescription()}
 
@@ -639,12 +640,15 @@ static class Program
 			}
 			else
 			{
-				Console.WriteLine(ProgramMeta.GetTitle());
-				Console.WriteLine(ProgramMeta.GetCopyright());
-				Console.WriteLine("Hosts file: " + Hosts.FileName.ToLower());
-				Console.WriteLine();
-
 				IsShell = true;
+
+				Console.WriteLine($"""
+					{ProgramMeta.GetTitle()}
+					{ProgramMeta.GetCopyright()}
+					Hosts file: {Hosts.FileName.ToLower()}
+
+					""");
+
 				while (true)
 				{
 					Console.Write("hosts> ");
