@@ -149,18 +149,18 @@ static class Program
 			var args_queue = new Queue<string>(args);
 			var mode = (args_queue.Count > 0) ? args_queue.Dequeue().ToLower() : "help";
 			var hosts_file = Hosts.FileName;
-			var backup_file = hosts_file + ".backup";
 			var rollback_file = hosts_file + ".rollback";
 
 			switch (mode)
 			{
-				case "open":
-					if (IsUnix) break;
+				case "open" when (IsUnix):
+				{
 					var exe = FileAssoc.GetExecutable(".txt") ?? "notepad";
 					Process.Start(exe, '"' + hosts_file + '"');
 					return true;
-
+				}
 				case "apply":
+				{
 					if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
 					if (args_queue.Count == 0) throw new Exception("Applied file is not specified.");
 					var apply_file = args_queue.Dequeue();
@@ -169,47 +169,59 @@ static class Program
 					ForceCopy(apply_file, hosts_file);
 					Console.WriteLine("[OK] New hosts file is applied successfully.");
 					return true;
-
+				}
 				case "backup":
+				{
 					if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
-					if (args_queue.Count > 0) backup_file = hosts_file + "." + args_queue.Dequeue().ToLower();
+					var backup_name = (args_queue.Count > 0 ? args_queue.Dequeue().ToLower() : "backup");
+					// On Windows, hosts.ics serves other purposes, so we can't store a backup there.
+					if (!IsUnix && backup_name == "ics") { throw new Exception("The backup name \"ics\" is not allowed."); }
+					var backup_file = hosts_file + "." + backup_name;
 					ForceCopy(hosts_file, backup_file);
 					Console.WriteLine("[OK] Hosts file is backed up successfully.");
 					return true;
-
+				}
 				case "restore":
+				{
 					if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
-					if (args_queue.Count > 0) backup_file = hosts_file + "." + args_queue.Dequeue().ToLower();
+					var backup_name = (args_queue.Count > 0 ? args_queue.Dequeue().ToLower() : "backup");
+					// On Windows, hosts.ics serves other purposes, so we can't store a backup there.
+					if (!IsUnix && backup_name == "ics") { throw new Exception("The backup name \"ics\" is not allowed."); }
+					var backup_file = hosts_file + "." + backup_name;
 					if (!File.Exists(backup_file)) throw new Exception("Backup file does not exist.");
 					ForceCopy(hosts_file, rollback_file);
 					ForceCopy(backup_file, hosts_file);
 					Console.WriteLine("[OK] Hosts file is restored successfully.");
 					return true;
-
+				}
 				case "rollback":
+				{
 					if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
 					if (!File.Exists(rollback_file)) throw new Exception("Rollback file does not exist.");
 					if (File.Exists(hosts_file)) File.Delete(hosts_file);
 					File.Move(rollback_file, hosts_file);
 					Console.WriteLine("[OK] Hosts file is rolled back successfully.");
 					return true;
-
+				}
 				case "reset":
 				case "empty":
 				case "recreate":
 				case "erase":
+				{
 					if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
 					ForceCopy(hosts_file, rollback_file);
 					File.WriteAllText(hosts_file, new HostsItem("127.0.0.1", "localhost").ToString());
 					Console.WriteLine("[OK] New hosts file is created successfully.");
 					return true;
-
+				}
 				case "help":
 				case "--help":
 				case "-h":
 				case "/?":
+				{
 					Help();
 					return true;
+				}
 			}
 
 			Hosts.Load();
@@ -220,54 +232,62 @@ static class Program
 				case "print":
 				case "raw":
 				case "file":
+				{
 					Console.WriteLine(File.ReadAllText(Hosts.FileName, Hosts.Encoding));
 					return true;
-
+				}
 				case "list":
 				case "view":
 				case "select":
 				case "ls":
 				case "show":
+				{
 					RunListMode(args_queue.ToList());
 					return true;
-
+				}
 				case "format":
+				{
 					if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
 					Hosts.ResetFormat();
 					Console.WriteLine("[OK] Hosts file is formatted successfully.");
 					break;
-
+				}
 				case "clean":
+				{
 					if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
 					Hosts.RemoveInvalid();
 					Hosts.ResetFormat();
 					Console.WriteLine("[OK] Hosts file is cleaned successfully.");
 					break;
-
+				}
 				case "add":
 				case "new":
+				{
 					if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
 					RunAddMode(args_queue.ToList());
 					break;
-
+				}
 				case "set":
+				{
 					if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
 					RunUpdateMode(args_queue.ToList(), true);
 					break;
-
+				}
 				case "change":
 				case "update":
 				case "upd":
+				{
 					if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
 					RunUpdateMode(args_queue.ToList(), false);
 					break;
-
+				}
 				case "rem":
 				case "rm":
 				case "remove":
 				case "del":
 				case "delete":
 				case "unset":
+				{
 					if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
 					if (args_queue.Count == 0) throw new HostNotSpecifiedException();
 					Lines = Hosts.GetMatched(LaxHostArg(args[1]));
@@ -278,9 +298,10 @@ static class Program
 						Console.WriteLine("[REMOVED] {0} {1}", Line.IP.ToString(), Line.Aliases.ToString());
 					}
 					break;
-
+				}
 				case "on":
 				case "enable":
+				{
 					if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
 					if (args_queue.Count == 0) throw new HostNotSpecifiedException();
 					Lines = Hosts.GetMatched(LaxHostArg(args[1]));
@@ -291,9 +312,10 @@ static class Program
 						Console.WriteLine("[ENABLED] {0} {1}", Line.IP.ToString(), Line.Aliases.ToString());
 					}
 					break;
-
+				}
 				case "off":
 				case "disable":
+				{
 					if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
 					if (args_queue.Count == 0) throw new HostNotSpecifiedException();
 					Lines = Hosts.GetMatched(LaxHostArg(args[1]));
@@ -304,8 +326,9 @@ static class Program
 						Console.WriteLine("[DISABLED] {0} {1}", Line.IP.ToString(), Line.Aliases.ToString());
 					}
 					break;
-
+				}
 				case "hide":
+				{
 					if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
 					if (args_queue.Count == 0) throw new HostNotSpecifiedException();
 					Lines = Hosts.GetMatched(LaxHostArg(args[1]));
@@ -316,8 +339,9 @@ static class Program
 						Console.WriteLine("[HIDDEN] {0} {1}", Line.IP.ToString(), Line.Aliases.ToString());
 					}
 					break;
-
+				}
 				case "unhide":
+				{
 					if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
 					if (args_queue.Count == 0) throw new HostNotSpecifiedException();
 					Lines = Hosts.GetMatched(LaxHostArg(args[1]));
@@ -328,11 +352,13 @@ static class Program
 						Console.WriteLine("[UNHIDDEN] {0} {1}", Line.IP.ToString(), Line.Aliases.ToString());
 					}
 					break;
-
+				}
 				default:
+				{
 					Console.WriteLine($"[ERROR] Unknown command '{mode}'.\n");
 					Help();
 					return false;
+				}
 			}
 
 			MakeWritable(rollback_file);

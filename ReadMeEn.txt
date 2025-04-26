@@ -35,7 +35,7 @@ hosts list [--all] [mask]
  - With "--all" flag, it displays disabled and hidden hosts also
  - Aliases: view, select, ls, show
  - Example: list vk
- - Example: list all *.local
+ - Example: list --all *.local
 
 hosts add <host> [aliases] [ipv4] [ipv6] # [comment]
  - Adds a new hostname, [ipv4] is 127.0.0.1 by default
@@ -116,6 +116,9 @@ hosts open
 ------------------------------------------------------------------------------------------------------------------------
   Changelog
 ------------------------------------------------------------------------------------------------------------------------
+
+v1.6.4 [2025/XX/XX]
+ - The backup name "ics" is not allowed on Windows (since hosts.ics serves other purposes).
 
 v1.6.3 [2024/10/26]
  - A non-zero error code is returned if an error occurs.
