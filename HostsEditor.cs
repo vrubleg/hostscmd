@@ -93,9 +93,9 @@ public class HostsEditor : List<HostsItem>
 		base.Add(new HostsItem(ip, hosts, comment));
 	}
 
-	public void ResetFormat(bool resetFormat = true)
+	public void ResetFormat(bool reset_format = true)
 	{
-		this.ForEach(item => item.ResetFormat = resetFormat);
+		this.ForEach(item => item.ResetFormat = reset_format);
 	}
 
 	public void RemoveInvalid()

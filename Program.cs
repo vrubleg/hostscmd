@@ -167,7 +167,7 @@ static class Program
 					if (!File.Exists(apply_file)) throw new Exception("Applied file does not exist.");
 					ForceCopy(hosts_file, rollback_file);
 					ForceCopy(apply_file, hosts_file);
-					Console.WriteLine("[OK] New hosts file is applied successfully.");
+					Console.WriteLine("[OK] New hosts file has been applied successfully.");
 					return true;
 				}
 				case "backup":
@@ -178,7 +178,7 @@ static class Program
 					if (!IsUnix && backup_name == "ics") { throw new Exception("The backup name \"ics\" is not allowed."); }
 					var backup_file = hosts_file + "." + backup_name;
 					ForceCopy(hosts_file, backup_file);
-					Console.WriteLine("[OK] Hosts file is backed up successfully.");
+					Console.WriteLine("[OK] Hosts file has been backed up successfully.");
 					return true;
 				}
 				case "restore":
@@ -191,7 +191,7 @@ static class Program
 					if (!File.Exists(backup_file)) throw new Exception("Backup file does not exist.");
 					ForceCopy(hosts_file, rollback_file);
 					ForceCopy(backup_file, hosts_file);
-					Console.WriteLine("[OK] Hosts file is restored successfully.");
+					Console.WriteLine("[OK] Hosts file has been restored successfully.");
 					return true;
 				}
 				case "rollback":
@@ -200,7 +200,7 @@ static class Program
 					if (!File.Exists(rollback_file)) throw new Exception("Rollback file does not exist.");
 					if (File.Exists(hosts_file)) File.Delete(hosts_file);
 					File.Move(rollback_file, hosts_file);
-					Console.WriteLine("[OK] Hosts file is rolled back successfully.");
+					Console.WriteLine("[OK] Hosts file has been rolled back successfully.");
 					return true;
 				}
 				case "reset":
@@ -211,7 +211,7 @@ static class Program
 					if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
 					ForceCopy(hosts_file, rollback_file);
 					File.WriteAllText(hosts_file, new HostsItem("127.0.0.1", "localhost").ToString());
-					Console.WriteLine("[OK] New hosts file is created successfully.");
+					Console.WriteLine("[OK] New hosts file has been created successfully.");
 					return true;
 				}
 				case "help":
@@ -249,7 +249,7 @@ static class Program
 				{
 					if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
 					Hosts.ResetFormat();
-					Console.WriteLine("[OK] Hosts file is formatted successfully.");
+					Console.WriteLine("[OK] Hosts file has been formatted successfully.");
 					break;
 				}
 				case "clean":
@@ -257,7 +257,7 @@ static class Program
 					if (!MakeWritable(hosts_file)) throw new NoWritePermissionException();
 					Hosts.RemoveInvalid();
 					Hosts.ResetFormat();
-					Console.WriteLine("[OK] Hosts file is cleaned successfully.");
+					Console.WriteLine("[OK] Hosts file has been cleaned successfully.");
 					break;
 				}
 				case "add":
